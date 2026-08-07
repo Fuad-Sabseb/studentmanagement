@@ -25,8 +25,7 @@ const router = express.Router();
 
 
 // Import controller functions
-const studentController =
-    require("../controllers/studentController");
+const studentController = require("../controllers/studentController");
 
 
 
@@ -51,8 +50,10 @@ const studentController =
  *
  */
 
-router.post("/",studentController.createStudent);
+router.get('/students/count', studentController.getStudentCount);
+//** */
 
+router.post("/",studentController.createStudent);
 
 
 
@@ -94,6 +95,12 @@ router.get("/department/:dept",studentController.getStudentsByDepartment
  * /api/students/1
  *
  */
+
+router.get("/count", studentController.countStudents);
+
+
+
+
 
 router.get("/:id",studentController.getStudentById);
 

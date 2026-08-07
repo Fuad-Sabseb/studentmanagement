@@ -88,8 +88,9 @@ app.use(
  */
 
 
-const logger =
-require("./middleware/loggerMiddleware");
+const logger = require("./middleware/loggerMiddleware");
+
+const requestLogger = require('./middleware/logger');
 
 
 // Every request passes through logger
