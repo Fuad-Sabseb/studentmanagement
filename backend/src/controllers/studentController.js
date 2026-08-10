@@ -1,20 +1,14 @@
 /**
  * =====================================================
  * studentController.js
- *
+ * -----------------------------------------------------
  * Purpose:
- * Handle HTTP requests and responses.
+ * Handle HTTP requests and responses for students.
  * =====================================================
  */
 
 const studentModel = require("../models/studentModel");
-
-/**
- * CREATE STUDENT
- * POST /api/students
- */
-const db = require('../config/db');
-
+const courseModel = require("../models/courseModel");
 
 /**
  * CREATE STUDENT
@@ -22,62 +16,22 @@ const db = require('../config/db');
  */
 exports.createStudent = async (req, res) => {
     try {
-        const { name, email, department } = req.body;
+        const student = req.body;
+        const result = await studentModel.createStudent(student);
 
-        // Task 5: Return 400 if name or email is missing
-        if (!name || !email) {
-            return res.status(400).json({
+        res.status(201).json({
+            success: true,
+            message: "Student created successfully",
+            id: result.insertId
+        });
+    } catch (error) {
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
                 success: false,
-                message: "Validation error: Name and email are required."
+                message: "A student with this email already exists"
             });
         }
 
-        const newStudentId = await studentModel.createStudent(req.body);
-        return res.status(201).json({
-            success: true,
-            message: "Student created successfully",
-            studentId: newStudentId
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-};
-
-
-// Get total count of students
-exports.getStudentCount = async (req, res) => {
-    try {
-        const [rows] = await db.query('SELECT COUNT(*) AS count FROM students');
-        return res.status(200).json({
-            success: true,
-            totalStudents: rows[0].count
-        });
-    } catch (error) {
-        console.error('Error fetching student count:', error);
-        return res.status(500).json({
-            success: false,
-            error: 'Internal Server Error'
-        });
-    }
-};
-
-/**
- * COUNT STUDENTS
- * GET /api/students/count
- */
-exports.countStudents = async (req, res) => {
-    try {
-        const result = await studentModel.countStudents();
-
-        res.status(200).json({
-            success: true,
-            total: result.total
-        });
-
-    } catch (error) {
         res.status(500).json({
             success: false,
             message: error.message
@@ -86,7 +40,7 @@ exports.countStudents = async (req, res) => {
 };
 
 /**
- * GET ALL STUDENTS
+ * GET ALL ACTIVE STUDENTS
  * GET /api/students
  */
 exports.getAllStudents = async (req, res) => {
@@ -95,9 +49,9 @@ exports.getAllStudents = async (req, res) => {
 
         res.json({
             success: true,
+            count: students.length,
             data: students
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -116,14 +70,18 @@ exports.getStudentById = async (req, res) => {
 
         if (!student) {
             return res.status(404).json({
+                success: false,
                 message: "Student not found"
             });
         }
 
-        res.json(student);
-
+        res.json({
+            success: true,
+            data: student
+        });
     } catch (error) {
         res.status(500).json({
+            success: false,
             message: error.message
         });
     }
@@ -139,9 +97,29 @@ exports.getStudentsByDepartment = async (req, res) => {
 
         res.json({
             success: true,
+            count: students.length,
             data: students
         });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
 
+/**
+ * GET COUNT OF ACTIVE STUDENTS
+ * GET /api/students/count
+ */
+exports.getStudentCount = async (req, res) => {
+    try {
+        const total = await studentModel.countActiveStudents();
+
+        res.json({
+            success: true,
+            data: { total }
+        });
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -156,33 +134,118 @@ exports.getStudentsByDepartment = async (req, res) => {
  */
 exports.updateStudent = async (req, res) => {
     try {
+        const exists = await studentModel.studentExists(req.params.id);
+        if (!exists) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
         await studentModel.updateStudent(req.params.id, req.body);
 
         res.json({
+            success: true,
             message: "Student updated successfully"
         });
-
     } catch (error) {
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
+                success: false,
+                message: "A student with this email already exists"
+            });
+        }
+
         res.status(500).json({
+            success: false,
             message: error.message
         });
     }
 };
 
 /**
- * DELETE STUDENT
+ * SOFT DELETE STUDENT
  * DELETE /api/students/:id
  */
 exports.deleteStudent = async (req, res) => {
     try {
+        const exists = await studentModel.studentExists(req.params.id);
+        if (!exists) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
         await studentModel.deleteStudent(req.params.id);
 
         res.json({
+            success: true,
             message: "Student deleted successfully"
         });
-
     } catch (error) {
         res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+/**
+ * ASSIGN COURSE TO STUDENT
+ * POST /api/students/:id/courses
+ * Body: { course_id }
+ */
+exports.assignCourse = async (req, res) => {
+    try {
+        const studentId = req.params.id;
+        const { course_id } = req.body;
+
+        const studentExists = await studentModel.studentExists(studentId);
+        if (!studentExists) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
+        }
+
+        const course = await courseModel.getCourseById(course_id);
+        if (!course) {
+            return res.status(404).json({
+                success: false,
+                message: "Course not found"
+            });
+        }
+
+        await studentModel.assignCourse(studentId, course_id);
+
+        res.status(201).json({
+            success: true,
+            message: "Course assigned to student successfully"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+/**
+ * REMOVE COURSE FROM STUDENT
+ * DELETE /api/students/:id/courses/:courseId
+ */
+exports.removeCourse = async (req, res) => {
+    try {
+        await studentModel.removeCourse(req.params.id, req.params.courseId);
+
+        res.json({
+            success: true,
+            message: "Course removed from student successfully"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
             message: error.message
         });
     }
