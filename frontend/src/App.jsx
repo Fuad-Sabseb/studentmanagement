@@ -3,6 +3,7 @@ import { Layers, Users, BookOpen } from "lucide-react";
 
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import LoginPage from "./components/LoginPage.jsx";
 import AnalyticsCard from "./components/AnalyticsCard.jsx";
 import EnrollmentChart from "./components/EnrollmentChart.jsx";
 import StudentTable from "./components/StudentTable.jsx";
@@ -11,9 +12,25 @@ import CourseAssignModal from "./components/CourseAssignModal.jsx";
 import ConfirmDeleteModal from "./components/ConfirmDeleteModal.jsx";
 import { useToast } from "./components/Toast.jsx";
 import { studentsApi, departmentsApi, coursesApi } from "./services/api.js";
+import { authApi } from "./services/authApi.js";
 
 export default function App() {
   const toast = useToast();
+
+  // ---- auth state -------------------------------------------------
+  const [currentStudent, setCurrentStudent] = useState(() => authApi.getStoredStudent());
+  const isAuthenticated = Boolean(currentStudent) && authApi.isAuthenticated();
+
+  const handleLogin = async (username, password) => {
+    const student = await authApi.login(username, password);
+    setCurrentStudent(student);
+    toast.success(`Welcome back, ${student.name}.`);
+  };
+
+  const handleLogout = () => {
+    authApi.logout();
+    setCurrentStudent(null);
+  };
 
   // ---- core data state -------------------------------------------------
   const [students, setStudents] = useState([]);
@@ -69,13 +86,13 @@ export default function App() {
         studentsApi.getCount()
       ]);
 
-      setStudents(studentsRes.data || []);
-      setDepartments(departmentsRes.data || []);
-      setCourses(coursesRes.data || []);
+      setStudents(studentsRes.data ?? []);
+      setDepartments(departmentsRes.data ?? []);
+      setCourses(coursesRes.data ?? []);
       setActiveCount(countRes.data?.total ?? studentsRes.data?.length ?? 0);
       setApiStatus("online");
     } catch (err) {
-      setError(err.message || "Something went wrong while loading data.");
+      setError(err.message ?? "Something went wrong while loading data.");
       setApiStatus("offline");
     } finally {
       setLoading(false);
@@ -84,8 +101,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    loadAll();
-  }, [loadAll]);
+    if (isAuthenticated) {
+      loadAll();
+    }
+  }, [isAuthenticated, loadAll]);
 
   const handleRefresh = () => loadAll({ silent: true });
 
@@ -158,20 +177,19 @@ export default function App() {
       await studentsApi.assignCourse(student.id, course.id);
       toast.success(`Enrolled ${student.name} in ${course.code}.`);
 
-      // keep the modal in sync without a full reload flicker
       setStudents((prev) =>
         prev.map((s) =>
-          s.id === student.id ? { ...s, courses: [...(s.courses || []), course] } : s
+          s.id === student.id ? { ...s, courses: [...(s.courses ?? []), course] } : s
         )
       );
       setAssignTarget((prev) =>
         prev && prev.id === student.id
-          ? { ...prev, courses: [...(prev.courses || []), course] }
+          ? { ...prev, courses: [...(prev.courses ?? []), course] }
           : prev
       );
       loadAll({ silent: true });
     } catch (err) {
-      toast.error(err.message || "Could not assign this course.");
+      toast.error(err.message ?? "Could not assign this course.");
     } finally {
       setAssigningCourseId(null);
     }
@@ -181,9 +199,16 @@ export default function App() {
   // Derived metrics
   // ------------------------------------------------------------------
   const totalCoursesEnrolled = courses.reduce(
-    (sum, c) => sum + (Number(c.enrolled_count) || 0),
+    (sum, c) => sum + (Number(c.enrolled_count) ?? 0),
     0
   );
+
+  // ------------------------------------------------------------------
+  // Not logged in yet — show the login screen only
+  // ------------------------------------------------------------------
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
   return (
     <div className="min-h-screen">
@@ -194,6 +219,8 @@ export default function App() {
         apiStatus={apiStatus}
         activeSection={activeSection}
         onNavigate={handleNavigate}
+        currentStudent={currentStudent}
+        onLogout={handleLogout}
       />
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
