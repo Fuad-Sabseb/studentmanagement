@@ -1,4 +1,4 @@
-import { Github, Mail, ShieldCheck, Twitter, Linkedin, Instagram } from "lucide-react";
+import { Github, Mail, ShieldCheck, Twitter, Linkedin,GraduationCap, Instagram } from "lucide-react";
 import logo from "../images/logo.png";
 
 // Update these URLs to your real profiles.
@@ -86,16 +86,16 @@ export default function Footer({ apiStatus, activeCount }) {
               </p>
             )}
             <a
-              href="mailto:support@cohort.app"
+              href="mailto:support@studentmanagement.com"
               className="mt-3 flex items-center gap-1.5 text-xs text-slate-500 transition hover:text-slate-300"
             >
-              <Mail className="h-3.5 w-3.5" /> support@cohort.app
+              <Mail className="h-3.5 w-3.5" /> support@studentmanagement.com
             </a>
           </div>
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-slate-800/70 pt-6 text-xs text-slate-500 sm:flex-row">
-          <p>© {year} Student Management. Built for the Full-Stack Student Management project.</p>
+          <p>© {year} Student Management. central student management platform.</p>
 
           <div className="flex items-center gap-3 social-links">
             {SOCIAL_LINKS.map((social) => {
@@ -117,8 +117,8 @@ export default function Footer({ apiStatus, activeCount }) {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-            <span>Data soft-deleted, never destroyed.</span>
+            <GraduationCap className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Where you Master your skills</span>
           </div>
         </div>
       </div>
