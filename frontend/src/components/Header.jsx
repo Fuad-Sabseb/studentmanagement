@@ -8,7 +8,8 @@ import {
   LayoutDashboard,
   Users,
   Layers,
-  BookOpen
+  BookOpen,
+  LogOut
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -25,7 +26,9 @@ export default function Header({
   isRefreshing,
   apiStatus,
   activeSection = "dashboard",
-  onNavigate
+  onNavigate,
+  currentStudent,
+  onLogout
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -108,6 +111,18 @@ export default function Header({
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">Add Student</span>
           </button>
+
+          {currentStudent && (
+            <button
+              onClick={onLogout}
+              className="btn-secondary !px-3"
+              title={`Sign out ${currentStudent.name}`}
+              aria-label="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden lg:inline">{currentStudent.name}</span>
+            </button>
+          )}
 
           {/* Hamburger — mobile only */}
           <button
