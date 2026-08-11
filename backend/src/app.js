@@ -28,13 +28,20 @@ app.use(logger);
 // ---------------------------------------------------
 // 3. ROUTES
 // ---------------------------------------------------
+const { requireAuth } = require("./middleware/authMiddleware");
+
+const authRoutes = require("./routes/authRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 
-app.use("/api/students", studentRoutes);
-app.use("/api/departments", departmentRoutes);
-app.use("/api/courses", courseRoutes);
+// Public: logging in does not require a token yet.
+app.use("/api/auth", authRoutes);
+
+// Protected: every request below this line requires a valid JWT.
+app.use("/api/students", requireAuth, studentRoutes);
+app.use("/api/departments", requireAuth, departmentRoutes);
+app.use("/api/courses", requireAuth, courseRoutes);
 
 // ---------------------------------------------------
 // 4. ROOT ROUTE
@@ -44,6 +51,7 @@ app.get("/", (req, res) => {
         success: true,
         message: "Welcome to Student Management API",
         endpoints: {
+            auth: "/api/auth",
             students: "/api/students",
             departments: "/api/departments",
             courses: "/api/courses"
