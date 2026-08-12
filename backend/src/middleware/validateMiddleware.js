@@ -4,8 +4,8 @@
  * -----------------------------------------------------
  * Purpose:
  * Validate request bodies for the Student, Department,
- * and Course endpoints. Returns HTTP 400 when required
- * fields are missing or malformed.
+ * Course, and Grade endpoints. Returns HTTP 400 when
+ * required fields are missing or malformed.
  * =====================================================
  */
 
@@ -125,10 +125,48 @@ const validateAssignCourse = (req, res, next) => {
     next();
 };
 
+/**
+ * Validate grade entry payloads.
+ * Required: student_id, course_id
+ * Marks (mid_exam, quiz, assignment, final_exam) are optional but,
+ * if present, must be numbers between 0 and 100.
+ */
+const validateGrade = (req, res, next) => {
+    const { student_id, course_id, mid_exam, quiz, assignment, final_exam } = req.body || {};
+    const errors = [];
+
+    if (!student_id || Number.isNaN(Number(student_id))) {
+        errors.push("student_id is required and must be a number");
+    }
+    if (!course_id || Number.isNaN(Number(course_id))) {
+        errors.push("course_id is required and must be a number");
+    }
+
+    for (const [field, value] of Object.entries({ mid_exam, quiz, assignment, final_exam })) {
+        if (value !== undefined && value !== null && value !== "") {
+            const n = Number(value);
+            if (Number.isNaN(n) || n < 0 || n > 100) {
+                errors.push(`${field} must be a number between 0 and 100`);
+            }
+        }
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Validation failed",
+            errors
+        });
+    }
+
+    next();
+};
+
 module.exports = {
     validateCreateStudent,
     validateUpdateStudent,
     validateDepartment,
     validateCourse,
-    validateAssignCourse
+    validateAssignCourse,
+    validateGrade
 };
