@@ -39,6 +39,45 @@ async function connectDB() {
             ) ENGINE=InnoDB;
         `);
 
+        // Ensure semesters table exists
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS semesters (
+                id            INT AUTO_INCREMENT PRIMARY KEY,
+                name          VARCHAR(100) NOT NULL,
+                academic_year VARCHAR(50) NOT NULL DEFAULT '2025/2026',
+                is_current    BOOLEAN NOT NULL DEFAULT FALSE,
+                created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB;
+        `);
+
+        // Ensure class_schedules table exists
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS class_schedules (
+                id              INT AUTO_INCREMENT PRIMARY KEY,
+                course_id       INT NOT NULL,
+                day_of_week     ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday') NOT NULL,
+                start_time      VARCHAR(10) NOT NULL,
+                end_time        VARCHAR(10) NOT NULL,
+                room            VARCHAR(100) NOT NULL,
+                instructor_name VARCHAR(150) NOT NULL DEFAULT 'Staff',
+                created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB;
+        `);
+
+        // Safely alter courses table if credit_hours / semester_id columns are missing
+        try {
+            await connection.query("ALTER TABLE courses ADD COLUMN credit_hours INT NOT NULL DEFAULT 3");
+        } catch (_) {}
+        try {
+            await connection.query("ALTER TABLE courses ADD COLUMN semester_id INT NULL");
+        } catch (_) {}
+
+        // Safely alter users table to accept role teacher
+        try {
+            await connection.query("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'student', 'teacher') NOT NULL DEFAULT 'student'");
+        } catch (_) {}
+
         connection.release();
     } catch (error) {
         console.error("❌ MySQL Database Connection Failed");
