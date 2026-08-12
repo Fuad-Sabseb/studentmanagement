@@ -9,6 +9,8 @@
 
 const studentModel = require("../models/studentModel");
 const courseModel = require("../models/courseModel");
+const bcrypt = require("bcryptjs");
+const { pool } = require("../config/db");
 
 /**
  * CREATE STUDENT
@@ -18,11 +20,34 @@ exports.createStudent = async (req, res) => {
     try {
         const student = req.body;
         const result = await studentModel.createStudent(student);
+        const studentId = result.insertId;
+
+        // Auto-generate login credentials for the student
+        let username = (student.email || "").split("@")[0].toLowerCase().replace(/[^a-z0-9._-]/g, "");
+        if (!username) username = `student${studentId}`;
+
+        // Ensure username uniqueness
+        const [clash] = await pool.query("SELECT id FROM users WHERE username = ?", [username]);
+        if (clash.length > 0) {
+            username = `${username}${studentId}`;
+        }
+
+        const DEFAULT_PASSWORD = "Student@123";
+        const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
+
+        await pool.execute(
+            "INSERT INTO users (username, password_hash, role, student_id) VALUES (?, ?, 'student', ?)",
+            [username, passwordHash, studentId]
+        );
 
         res.status(201).json({
             success: true,
             message: "Student created successfully",
-            id: result.insertId
+            id: studentId,
+            credentials: {
+                username,
+                defaultPassword: DEFAULT_PASSWORD
+            }
         });
     } catch (error) {
         if (error.code === "ER_DUP_ENTRY") {
@@ -51,6 +76,74 @@ exports.getAllStudents = async (req, res) => {
             success: true,
             count: students.length,
             data: students
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+/**
+ * GET LOGGED-IN STUDENT PROFILE
+ * GET /api/students/me
+ */
+exports.getMyProfile = async (req, res) => {
+    try {
+        const studentId = req.user.studentId || req.user.student_id;
+        if (!studentId) {
+            return res.status(404).json({
+                success: false,
+                message: "No student profile associated with this account"
+            });
+        }
+
+        const student = await studentModel.getStudentById(studentId);
+        if (!student) {
+            return res.status(404).json({
+                success: false,
+                message: "Student profile not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            data: student
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+/**
+ * UPDATE LOGGED-IN STUDENT PROFILE (SELF-SERVICE)
+ * PUT /api/students/me
+ */
+exports.updateMyProfile = async (req, res) => {
+    try {
+        const studentId = req.user.studentId || req.user.student_id;
+        if (!studentId) {
+            return res.status(404).json({
+                success: false,
+                message: "No student profile associated with this account"
+            });
+        }
+
+        const { phone } = req.body || {};
+        await pool.execute(
+            "UPDATE students SET phone = ? WHERE id = ? AND is_deleted = FALSE",
+            [phone || null, studentId]
+        );
+
+        const updated = await studentModel.getStudentById(studentId);
+        res.json({
+            success: true,
+            message: "Profile updated successfully",
+            data: updated
         });
     } catch (error) {
         res.status(500).json({
