@@ -5,6 +5,7 @@ import LoginPage from "./components/LoginPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AdminDashboard from "./components/AdminDashboard.jsx";
 import StudentDashboard from "./components/StudentDashboard.jsx";
+import TeacherDashboard from "./components/TeacherDashboard.jsx";
 import { useToast } from "./components/Toast.jsx";
 import { authApi } from "./services/authApi.js";
 
@@ -24,6 +25,12 @@ export default function App() {
     setUser(null);
   };
 
+  const getRoleRedirect = (role) => {
+    if (role === "admin") return "/admin";
+    if (role === "teacher") return "/teacher";
+    return "/student";
+  };
+
   return (
     <BrowserRouter>
       <Routes>
@@ -31,7 +38,7 @@ export default function App() {
           path="/login"
           element={
             isAuthenticated ? (
-              <Navigate to={user.role === "admin" ? "/admin" : "/student"} replace />
+              <Navigate to={getRoleRedirect(user.role)} replace />
             ) : (
               <LoginPage onLogin={handleLogin} />
             )
@@ -48,6 +55,15 @@ export default function App() {
         />
 
         <Route
+          path="/teacher/*"
+          element={
+            <ProtectedRoute user={isAuthenticated ? user : null} allow={["teacher", "admin"]}>
+              <TeacherDashboard currentUser={user} onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/student/*"
           element={
             <ProtectedRoute user={isAuthenticated ? user : null} allow={["student"]}>
@@ -59,7 +75,10 @@ export default function App() {
         <Route
           path="*"
           element={
-            <Navigate to={isAuthenticated ? (user.role === "admin" ? "/admin" : "/student") : "/login"} replace />
+            <Navigate
+              to={isAuthenticated ? getRoleRedirect(user.role) : "/login"}
+              replace
+            />
           }
         />
       </Routes>
