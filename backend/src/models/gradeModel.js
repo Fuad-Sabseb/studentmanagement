@@ -44,13 +44,20 @@ function computeDerived({ mid_exam = 0, quiz = 0, assignment = 0, final_exam = 0
 }
 
 async function recalculateCgpa(studentId) {
-    const [rows] = await pool.query(
-        "SELECT gpa FROM grades WHERE student_id = ?",
-        [studentId]
-    );
+    const [rows] = await pool.query(`
+        SELECT g.gpa, COALESCE(c.credit_hours, 3) AS credit_hours
+        FROM grades g
+        JOIN courses c ON c.id = g.course_id
+        WHERE g.student_id = ?
+    `, [studentId]);
+
     if (rows.length === 0) return 0;
-    const avg = rows.reduce((sum, r) => sum + Number(r.gpa), 0) / rows.length;
-    const cgpa = Number(avg.toFixed(2));
+    const totalCredits = rows.reduce((sum, r) => sum + Number(r.credit_hours), 0);
+    if (totalCredits === 0) return 0;
+
+    const weightedPoints = rows.reduce((sum, r) => sum + (Number(r.gpa) * Number(r.credit_hours)), 0);
+    const cgpa = Number((weightedPoints / totalCredits).toFixed(2));
+
     await pool.execute("UPDATE grades SET cgpa = ? WHERE student_id = ?", [cgpa, studentId]);
     return cgpa;
 }
@@ -142,11 +149,19 @@ const updateGradeById = async (id, marks) => {
 
 const getGradesByStudent = async (studentId) => {
     const [rows] = await pool.query(
-        `SELECT g.*, c.name AS course_name, c.code AS course_code
+        `SELECT
+            g.*,
+            c.name AS course_name,
+            c.code AS course_code,
+            COALESCE(c.credit_hours, 3) AS credit_hours,
+            c.semester_id,
+            s.name AS semester_name,
+            s.academic_year
          FROM grades g
          JOIN courses c ON c.id = g.course_id
+         LEFT JOIN semesters s ON s.id = c.semester_id
          WHERE g.student_id = ?
-         ORDER BY c.name ASC`,
+         ORDER BY s.created_at ASC, c.name ASC`,
         [studentId]
     );
     return rows;
