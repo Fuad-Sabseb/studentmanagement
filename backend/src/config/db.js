@@ -24,6 +24,21 @@ async function connectDB() {
     try {
         const connection = await pool.getConnection();
         console.log("✅ MySQL Database Connected Successfully");
+
+        // Ensure announcements table exists
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS announcements (
+                id          INT AUTO_INCREMENT PRIMARY KEY,
+                title       VARCHAR(200) NOT NULL,
+                content     TEXT NOT NULL,
+                priority    ENUM('normal', 'important', 'urgent') NOT NULL DEFAULT 'normal',
+                audience    ENUM('all', 'students', 'admins') NOT NULL DEFAULT 'all',
+                author_name VARCHAR(100) DEFAULT 'Administration',
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB;
+        `);
+
         connection.release();
     } catch (error) {
         console.error("❌ MySQL Database Connection Failed");
