@@ -7,10 +7,11 @@ export default function CourseModal({
   onClose,
   onSubmit,
   departments = [],
+  semesters = [],
   initialCourse = null,
   submitting
 }) {
-  const [form, setForm] = useState({ name: "", code: "", department_id: "" });
+  const [form, setForm] = useState({ name: "", code: "", department_id: "", credit_hours: 3, semester_id: "" });
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -19,18 +20,22 @@ export default function CourseModal({
         setForm({
           name: initialCourse.name || "",
           code: initialCourse.code || "",
-          department_id: initialCourse.department_id ? String(initialCourse.department_id) : ""
+          department_id: initialCourse.department_id ? String(initialCourse.department_id) : "",
+          credit_hours: initialCourse.credit_hours ? Number(initialCourse.credit_hours) : 3,
+          semester_id: initialCourse.semester_id ? String(initialCourse.semester_id) : ""
         });
       } else {
         setForm({
           name: "",
           code: "",
-          department_id: departments[0]?.id ? String(departments[0].id) : ""
+          department_id: departments[0]?.id ? String(departments[0].id) : "",
+          credit_hours: 3,
+          semester_id: semesters[0]?.id ? String(semesters[0].id) : ""
         });
       }
       setErrors({});
     }
-  }, [open, initialCourse, departments]);
+  }, [open, initialCourse, departments, semesters]);
 
   const handleChange = (field) => (e) => {
     setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -59,7 +64,9 @@ export default function CourseModal({
       payload: {
         name: form.name.trim(),
         code: form.code.trim().toUpperCase(),
-        department_id: form.department_id ? Number(form.department_id) : null
+        department_id: form.department_id ? Number(form.department_id) : null,
+        credit_hours: Number(form.credit_hours) || 3,
+        semester_id: form.semester_id ? Number(form.semester_id) : null
       }
     });
   };
@@ -133,6 +140,43 @@ export default function CourseModal({
                   className="input-field"
                 />
                 {errors.name && <p className="mt-1 text-xs text-rose-400">{errors.name}</p>}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-400">
+                    Credit Hours (1–6)
+                  </label>
+                  <select
+                    value={form.credit_hours}
+                    onChange={handleChange("credit_hours")}
+                    className="input-field"
+                  >
+                    {[1, 2, 3, 4, 5, 6].map((ch) => (
+                      <option key={ch} value={ch}>
+                        {ch} Credit{ch > 1 ? "s" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-400">
+                    Academic Term / Semester
+                  </label>
+                  <select
+                    value={form.semester_id}
+                    onChange={handleChange("semester_id")}
+                    className="input-field"
+                  >
+                    <option value="">No Semester Assigned</option>
+                    {semesters.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({s.academic_year})
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div>
