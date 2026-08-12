@@ -18,6 +18,8 @@ const departmentRoutes = require("./routes/departmentRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const gradeRoutes = require("./routes/gradeRoutes");
 const announcementRoutes = require("./routes/announcementRoutes");
+const semesterRoutes = require("./routes/semesterRoutes");
+const scheduleRoutes = require("./routes/scheduleRoutes");
 
 // Public
 app.use("/api/auth", authRoutes);
@@ -29,6 +31,8 @@ app.use("/api/departments", requireAuth, departmentRoutes);
 app.use("/api/courses", requireAuth, courseRoutes);
 app.use("/api/grades", requireAuth, gradeRoutes);
 app.use("/api/announcements", requireAuth, announcementRoutes);
+app.use("/api/semesters", requireAuth, semesterRoutes);
+app.use("/api/schedules", requireAuth, scheduleRoutes);
 
 app.get("/", (req, res) => {
     res.json({
