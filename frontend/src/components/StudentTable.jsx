@@ -10,7 +10,8 @@ import {
   Users,
   Inbox,
   ServerCrash,
-  GraduationCap
+  GraduationCap,
+  FileText
 } from "lucide-react";
 
 function StatusBadge({ children, tone = "slate" }) {
@@ -65,7 +66,8 @@ export default function StudentTable({
   onEdit,
   onAssignCourse,
   onDelete,
-  onEnterGrades
+  onEnterGrades,
+  onViewTranscript
 }) {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all"); // "all" | "byDepartment"
@@ -293,6 +295,16 @@ export default function StudentTable({
                           >
                             <GraduationCap className="h-4 w-4" />
                           </button>
+                          {onViewTranscript && (
+                            <button
+                              onClick={() => onViewTranscript(s)}
+                              className="rounded-lg p-2 text-slate-400 transition hover:bg-brand-500/10 hover:text-brand-300"
+                              title="View & Print Official Transcript"
+                              aria-label={`Official Transcript for ${s.name}`}
+                            >
+                              <FileText className="h-4 w-4" />
+                            </button>
+                          )}
                           <button
                             onClick={() => onEdit(s)}
                             className="rounded-lg p-2 text-slate-400 transition hover:bg-indigo-500/10 hover:text-indigo-300"
