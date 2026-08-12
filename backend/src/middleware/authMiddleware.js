@@ -2,12 +2,10 @@
  * =====================================================
  * authMiddleware.js
  * -----------------------------------------------------
- * Purpose:
- * Protect routes by requiring a valid JWT in the
- * Authorization header: "Authorization: Bearer <token>"
+ * Verifies the JWT and attaches the decoded claims to
+ * req.user = { id, role, studentId, username }
  * =====================================================
  */
-
 const jwt = require("jsonwebtoken");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -25,7 +23,7 @@ const requireAuth = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.student = decoded; // { id, username }
+        req.user = decoded; // { id, role, studentId, username }
         next();
     } catch (error) {
         return res.status(401).json({
