@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { GraduationCap, Loader2, Lock, User } from "lucide-react";
+import { Loader2, Lock, User } from "lucide-react";
+import logo from "../images/logo.png";
 
 export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -36,10 +37,10 @@ export default function LoginPage({ onLogin }) {
         className="glass-panel w-full max-w-sm p-8"
       >
         <div className="mb-6 flex flex-col items-center text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 shadow-glow">
-            <GraduationCap className="h-6 w-6 text-white" />
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 shadow-glow overflow-hidden">
+            <img src={logo} alt="Student Management Logo" className="h-full w-full object-cover" />
           </div>
-          <h1 className="font-display text-lg font-semibold text-white">Cohort</h1>
+          <h1 className="font-display text-lg font-semibold text-white">Student Management</h1>
           <p className="mt-1 text-sm text-slate-400">Sign in with your student account</p>
         </div>
 
