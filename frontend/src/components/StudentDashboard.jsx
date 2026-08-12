@@ -14,11 +14,16 @@ import {
   KeyRound,
   Edit2,
   Loader2,
-  X
+  X,
+  FileText,
+  Calendar,
+  Clock
 } from "lucide-react";
-import { studentsApi, gradesApi, announcementsApi } from "../services/api.js";
+import { studentsApi, gradesApi, announcementsApi, schedulesApi } from "../services/api.js";
 import { useToast } from "./Toast.jsx";
 import ChangePasswordModal from "./ChangePasswordModal.jsx";
+import AcademicTranscriptModal from "./AcademicTranscriptModal.jsx";
+import TimetableGrid from "./TimetableGrid.jsx";
 import Footer from "./Footer.jsx";
 import logo from "../images/logo.png";
 
@@ -26,12 +31,15 @@ export default function StudentDashboard({ currentUser, onLogout }) {
   const toast = useToast();
   const [profile, setProfile] = useState(null);
   const [grades, setGrades] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
+  // Modals
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [transcriptModalOpen, setTranscriptModalOpen] = useState(false);
 
   // Phone edit modal
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
@@ -70,7 +78,16 @@ export default function StudentDashboard({ currentUser, onLogout }) {
         }
       }
 
-      // 3. Fetch Announcements for students
+      // 3. Fetch Class Schedules
+      let schedulesList = [];
+      try {
+        const schedRes = await schedulesApi.getMySchedule();
+        schedulesList = schedRes.data ?? [];
+      } catch {
+        schedulesList = [];
+      }
+
+      // 4. Fetch Announcements for students
       let announcementsList = [];
       try {
         const annRes = await announcementsApi.getAll();
@@ -81,6 +98,7 @@ export default function StudentDashboard({ currentUser, onLogout }) {
 
       setProfile(profileData);
       setGrades(gradesList);
+      setSchedules(schedulesList);
       setAnnouncements(announcementsList);
     } catch (err) {
       setError(err.message || "Could not load your academic dashboard.");
@@ -95,45 +113,49 @@ export default function StudentDashboard({ currentUser, onLogout }) {
     loadData();
   }, [currentUser?.studentId, currentUser?.student_id]);
 
-  const { cgpa, totalCourses, gradedCount, academicStanding } = useMemo(() => {
+  const { cgpa, totalCredits, totalCourses, gradedCount, academicStanding } = useMemo(() => {
     const validGrades = grades.filter((g) => g.gpa != null);
+    let totalCreds = 0;
+    let weightedSum = 0;
+
+    validGrades.forEach((g) => {
+      const cr = Number(g.credit_hours) || 3;
+      totalCreds += cr;
+      weightedSum += (Number(g.gpa) * cr);
+    });
+
     let calculatedCgpa = "—";
-    if (validGrades.length > 0) {
-      const sumGpa = validGrades.reduce((acc, g) => acc + Number(g.gpa), 0);
-      calculatedCgpa = (sumGpa / validGrades.length).toFixed(2);
+    if (totalCreds > 0) {
+      calculatedCgpa = (weightedSum / totalCreds).toFixed(2);
     } else if (grades.length > 0 && grades[0]?.cgpa != null) {
       calculatedCgpa = Number(grades[0].cgpa).toFixed(2);
     }
 
     const numCgpa = Number(calculatedCgpa) || 0;
     let standing = "In Progress";
-    if (numCgpa >= 3.75) standing = "High Distinction (Dean's List)";
-    else if (numCgpa >= 3.5) standing = "Distinction";
-    else if (numCgpa >= 3.0) standing = "Very Good";
-    else if (numCgpa >= 2.0) standing = "Good Standing";
+    if (numCgpa >= 3.75) standing = "First Class Honours (Dean's List)";
+    else if (numCgpa >= 3.5) standing = "First Class Honours";
+    else if (numCgpa >= 3.0) standing = "Second Class (Upper Division)";
+    else if (numCgpa >= 2.0) standing = "Good Academic Standing";
     else if (numCgpa > 0) standing = "Academic Warning";
 
     return {
       cgpa: calculatedCgpa,
+      totalCredits: totalCreds,
       totalCourses: profile?.courses?.length || grades.length || 0,
       gradedCount: validGrades.length,
       academicStanding: standing
     };
   }, [grades, profile]);
 
-  const openPhoneEdit = () => {
-    setEditPhone(profile?.phone || "");
-    setPhoneModalOpen(true);
-  };
-
   const handleSavePhone = async (e) => {
     e.preventDefault();
     setSavingPhone(true);
     try {
-      await studentsApi.updateMyProfile({ phone: editPhone.trim() });
-      toast.success("Phone number updated!");
-      setProfile((prev) => (prev ? { ...prev, phone: editPhone.trim() } : prev));
+      await studentsApi.updateMyProfile({ phone: editPhone });
+      toast.success("Phone number updated successfully!");
       setPhoneModalOpen(false);
+      loadData(true);
     } catch (err) {
       toast.error(err.message || "Failed to update phone number");
     } finally {
@@ -148,7 +170,7 @@ export default function StudentDashboard({ currentUser, onLogout }) {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 shadow-glow overflow-hidden">
-              <img src={logo} alt="Student Management Logo" className="h-full w-full object-cover" />
+              <img src={logo} alt="Cohort Logo" className="h-full w-full object-cover" />
             </div>
             <div>
               <h1 className="font-display text-base sm:text-lg font-semibold text-white">
@@ -162,6 +184,15 @@ export default function StudentDashboard({ currentUser, onLogout }) {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setTranscriptModalOpen(true)}
+              className="btn-primary !px-3 !py-1.5 text-xs flex items-center gap-1.5 shadow-glow"
+              title="Official Transcript (PDF)"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Official Transcript</span>
+            </button>
+
+            <button
               onClick={() => setPasswordModalOpen(true)}
               className="btn-secondary !px-2.5 text-xs flex items-center gap-1.5"
               title="Change Password"
@@ -169,20 +200,22 @@ export default function StudentDashboard({ currentUser, onLogout }) {
               <KeyRound className="h-3.5 w-3.5 text-indigo-400" />
               <span className="hidden sm:inline">Password</span>
             </button>
+
             <button
               onClick={() => loadData(true)}
-              className="btn-secondary !px-3 text-xs"
-              title="Refresh portal"
+              disabled={refreshing}
+              className="btn-secondary !px-2.5 text-xs"
+              title="Refresh"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">Refresh</span>
             </button>
+
             <button
               onClick={onLogout}
-              className="btn-secondary !px-3 text-xs text-rose-300 hover:text-rose-200 hover:border-rose-800/50"
+              className="btn-secondary !px-2.5 text-xs font-medium text-rose-400 hover:text-rose-300 flex items-center gap-1"
             >
               <LogOut className="h-3.5 w-3.5" />
-              <span>Sign out</span>
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
@@ -190,201 +223,181 @@ export default function StudentDashboard({ currentUser, onLogout }) {
 
       {/* Main Container */}
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 space-y-6">
-        {error && (
-          <div className="glass-panel border border-rose-800/60 bg-rose-950/40 p-4 text-sm text-rose-300 rounded-xl">
-            {error}
-          </div>
-        )}
-
-        {/* Notice Board (Announcements) */}
-        {announcements.length > 0 && (
-          <div className="glass-panel p-5 border-amber-900/40 bg-amber-950/20">
-            <div className="mb-3 flex items-center gap-2 text-amber-300 font-display font-semibold text-sm">
-              <Bell className="h-4 w-4" /> Notice Board
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {announcements.slice(0, 4).map((ann) => {
-                const priorityBadge =
-                  ann.priority === "urgent"
-                    ? "border-rose-800/60 bg-rose-950/60 text-rose-300 font-bold"
-                    : ann.priority === "important"
-                    ? "border-amber-800/60 bg-amber-950/60 text-amber-300"
-                    : "border-slate-800 bg-slate-900 text-slate-300";
-
-                return (
-                  <div
-                    key={ann.id}
-                    className="rounded-xl border border-slate-800/90 bg-slate-900/60 p-3.5 text-xs"
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-semibold text-white text-xs">{ann.title}</span>
-                      <span className={`pill text-[10px] ${priorityBadge}`}>{ann.priority}</span>
-                    </div>
-                    <p className="text-slate-300 leading-relaxed line-clamp-2">{ann.content}</p>
-                    <div className="mt-2 text-[10px] text-slate-500">
-                      {new Date(ann.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         {loading ? (
-          <div className="space-y-4">
-            <div className="skeleton h-32 w-full rounded-2xl" />
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="skeleton h-24 rounded-xl" />
-              <div className="skeleton h-24 rounded-xl" />
-              <div className="skeleton h-24 rounded-xl" />
-            </div>
-            <div className="skeleton h-64 w-full rounded-2xl" />
+          <div className="glass-panel flex h-64 flex-col items-center justify-center gap-3 text-slate-400">
+            <Loader2 className="h-8 w-8 animate-spin text-brand-400" />
+            <p className="text-sm">Loading your student academic profile…</p>
+          </div>
+        ) : error ? (
+          <div className="glass-panel border-rose-800/60 p-6 text-center text-rose-300">
+            <p className="text-sm font-medium">{error}</p>
+            <button onClick={() => loadData()} className="btn-secondary mt-3 text-xs">
+              Try Again
+            </button>
           </div>
         ) : profile ? (
           <>
-            {/* Academic Highlights & Standing Cards */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {/* CGPA Card */}
-              <div className="glass-panel p-5 relative overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Cumulative GPA (CGPA)</span>
-                  <Award className="h-5 w-5 text-brand-400" />
+            {/* Student ID Hero Card */}
+            <div className="glass-panel overflow-hidden p-6 relative">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-indigo-600 shadow-glow text-white font-display text-2xl font-bold">
+                    {profile.name?.charAt(0) || "S"}
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="font-display text-xl font-bold text-white">{profile.name}</h2>
+                      <span className="pill border border-brand-500/40 bg-brand-500/10 text-brand-300 font-mono text-[11px]">
+                        ID: STU-{String(profile.id).padStart(5, "0")}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-300">
+                      Department: <strong className="text-white">{profile.department_name || "General"}</strong>
+                    </p>
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1">
+                      <span className="flex items-center gap-1">
+                        <Mail className="h-3.5 w-3.5 text-slate-500" />
+                        {profile.email}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5 text-slate-500" />
+                        {profile.phone || "No phone added"}
+                        <button
+                          onClick={() => {
+                            setEditPhone(profile.phone || "");
+                            setPhoneModalOpen(true);
+                          }}
+                          className="text-indigo-400 hover:text-indigo-300 ml-1"
+                          title="Update phone number"
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </button>
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-3 flex items-baseline gap-2">
-                  <span className="font-display text-3xl font-bold text-white tracking-tight">{cgpa}</span>
-                  <span className="text-xs text-slate-400">/ 4.00</span>
-                </div>
-                <p className="mt-1 text-[11px] text-emerald-400 flex items-center gap-1">
-                  <Sparkles className="h-3 w-3" /> {academicStanding}
-                </p>
-              </div>
 
-              {/* Enrolled Courses */}
-              <div className="glass-panel p-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Courses Registered</span>
-                  <BookOpen className="h-5 w-5 text-indigo-400" />
-                </div>
-                <div className="mt-3 flex items-baseline gap-2">
-                  <span className="font-display text-3xl font-bold text-white tracking-tight">{totalCourses}</span>
-                  <span className="text-xs text-slate-400">courses</span>
-                </div>
-                <p className="mt-1 text-[11px] text-slate-400">
-                  {profile.department_name ? `Dept: ${profile.department_name}` : "Undergraduate"}
-                </p>
-              </div>
-
-              {/* Graded Courses */}
-              <div className="glass-panel p-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Completed Assessments</span>
-                  <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                </div>
-                <div className="mt-3 flex items-baseline gap-2">
-                  <span className="font-display text-3xl font-bold text-white tracking-tight">{gradedCount}</span>
-                  <span className="text-xs text-slate-400">of {totalCourses} graded</span>
-                </div>
-                <p className="mt-1 text-[11px] text-slate-400">
-                  {totalCourses - gradedCount > 0 ? `${totalCourses - gradedCount} courses in progress` : "All courses graded"}
-                </p>
-              </div>
-
-              {/* Academic Performance Index */}
-              <div className="glass-panel p-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Academic Standing</span>
-                  <TrendingUp className="h-5 w-5 text-amber-400" />
-                </div>
-                <div className="mt-3">
-                  <span className="text-base font-semibold text-white truncate block">
-                    {cgpa !== "—" && Number(cgpa) >= 2.0 ? "Satisfactory" : "Pending"}
+                {/* Standing & CGPA badge */}
+                <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-2 shrink-0 border-t md:border-t-0 border-slate-800 pt-4 md:pt-0">
+                  <div className="text-left md:text-right">
+                    <p className="text-xs uppercase font-medium tracking-wide text-slate-400">
+                      Cumulative CGPA
+                    </p>
+                    <p className="font-display text-3xl font-bold text-brand-300 font-mono">
+                      {cgpa} <span className="text-xs text-slate-500 font-normal">/ 4.00</span>
+                    </p>
+                  </div>
+                  <span className="pill border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-semibold">
+                    <Sparkles className="h-3 w-3 inline mr-1" />
+                    {academicStanding}
                   </span>
                 </div>
-                <p className="mt-1 text-[11px] text-slate-400">Standard 4.0 Scale</p>
               </div>
             </div>
 
-            {/* Profile summary */}
-            <div className="glass-panel p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="font-display text-base font-semibold text-white">
-                  Student Profile Information
-                </h2>
-                <button
-                  onClick={openPhoneEdit}
-                  className="btn-secondary !py-1 !px-2.5 text-xs flex items-center gap-1 hover:text-indigo-300"
-                >
-                  <Edit2 className="h-3 w-3" /> Update Phone
-                </button>
+            {/* Quick KPI Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="glass-panel p-4">
+                <div className="flex items-center gap-2 text-slate-400 mb-1 text-xs">
+                  <BookOpen className="h-4 w-4 text-indigo-400" />
+                  <span>Enrolled Courses</span>
+                </div>
+                <p className="font-display text-2xl font-bold text-white">{totalCourses}</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Active curriculum</p>
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-3.5">
-                  <span className="text-xs text-slate-500">Student Name</span>
-                  <p className="mt-0.5 font-medium text-slate-200">{profile.name}</p>
+
+              <div className="glass-panel p-4">
+                <div className="flex items-center gap-2 text-slate-400 mb-1 text-xs">
+                  <Award className="h-4 w-4 text-emerald-400" />
+                  <span>Graded Courses</span>
                 </div>
-                <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-3.5">
-                  <span className="text-xs text-slate-500">Email Address</span>
-                  <p className="mt-0.5 font-medium text-slate-200 flex items-center gap-1.5 truncate">
-                    <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" /> {profile.email}
-                  </p>
+                <p className="font-display text-2xl font-bold text-emerald-300">{gradedCount}</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {totalCourses - gradedCount > 0 ? `${totalCourses - gradedCount} in progress` : "All completed"}
+                </p>
+              </div>
+
+              <div className="glass-panel p-4">
+                <div className="flex items-center gap-2 text-slate-400 mb-1 text-xs">
+                  <CheckCircle2 className="h-4 w-4 text-brand-400" />
+                  <span>Credits Earned</span>
                 </div>
-                <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-3.5">
-                  <span className="text-xs text-slate-500">Phone Number</span>
-                  <p className="mt-0.5 font-medium text-slate-200 flex items-center gap-1.5">
-                    <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" /> {profile.phone || "—"}
-                  </p>
+                <p className="font-display text-2xl font-bold text-white">{totalCredits} CH</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Credit-hour weighted</p>
+              </div>
+
+              <div className="glass-panel p-4">
+                <div className="flex items-center gap-2 text-slate-400 mb-1 text-xs">
+                  <TrendingUp className="h-4 w-4 text-amber-400" />
+                  <span>Academic Standing</span>
                 </div>
-                <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-3.5">
-                  <span className="text-xs text-slate-500">Department</span>
-                  <p className="mt-0.5 font-medium text-slate-200">{profile.department_name || "Unassigned"}</p>
-                </div>
+                <p className="font-display text-sm font-semibold text-amber-200 truncate mt-1">
+                  {academicStanding}
+                </p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Good record</p>
               </div>
             </div>
 
-            {/* Enrolled courses */}
-            <div className="glass-panel p-6">
-              <h2 className="mb-3 flex items-center gap-2 font-display text-base font-semibold text-white">
-                <BookOpen className="h-4 w-4 text-indigo-400" /> Enrolled Courses
-              </h2>
-              {(profile.courses || []).length === 0 ? (
-                <p className="text-sm text-slate-500">You are not enrolled in any courses yet.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {profile.courses.map((c) => (
+            {/* Campus Notice Board */}
+            {announcements.length > 0 && (
+              <div className="glass-panel p-5">
+                <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-2.5">
+                  <div className="flex items-center gap-2 text-white font-display font-semibold text-sm">
+                    <Bell className="h-4 w-4 text-brand-400" />
+                    <span>Campus Notice Board</span>
+                  </div>
+                  <span className="text-xs text-slate-400">{announcements.length} announcement(s)</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {announcements.slice(0, 4).map((a) => (
                     <div
-                      key={c.id}
-                      className="flex items-center justify-between rounded-xl border border-indigo-900/40 bg-indigo-950/30 p-3"
+                      key={a.id}
+                      className="rounded-xl border border-slate-800/80 bg-slate-900/40 p-3.5 space-y-1.5"
                     >
-                      <div>
-                        <span className="font-semibold text-indigo-300">{c.code}</span>
-                        <p className="text-xs text-slate-300 truncate max-w-[200px]">{c.name}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-semibold text-xs text-white truncate">{a.title}</h4>
+                        <span
+                          className={`pill text-[10px] font-semibold uppercase ${
+                            a.priority === "urgent"
+                              ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
+                              : a.priority === "important"
+                              ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+                              : "border-slate-700 bg-slate-800 text-slate-300"
+                          }`}
+                        >
+                          {a.priority}
+                        </span>
                       </div>
-                      {c.letter_grade ? (
-                        <span className="pill border border-emerald-800/60 bg-emerald-950/60 text-emerald-300 font-semibold">
-                          {c.letter_grade} ({c.gpa})
-                        </span>
-                      ) : (
-                        <span className="pill border border-slate-800 bg-slate-900 text-slate-400 text-[11px]">
-                          In Progress
-                        </span>
-                      )}
+                      <p className="text-xs text-slate-400 line-clamp-2">{a.content}</p>
+                      <p className="text-[10px] text-slate-400 font-mono pt-1">
+                        Posted by {a.author_name || "Admin"} • {new Date(a.created_at).toLocaleDateString()}
+                      </p>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Grades & Academic Performance Table */}
+            {/* Weekly Timetable & Class Schedule */}
+            <TimetableGrid schedules={schedules} isAdmin={false} />
+
+            {/* Grades & Mark Assessment Breakdown */}
             <div className="glass-panel overflow-hidden">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800/70 p-5 gap-2">
                 <div>
-                  <h2 className="font-display text-base font-semibold text-white">Grades & Mark Assessment</h2>
-                  <p className="text-xs text-slate-400">Detailed score components and grade points per course</p>
+                  <h2 className="font-display text-base font-semibold text-white">Course Grades & Mark Assessment</h2>
+                  <p className="text-xs text-slate-400">Score components, credit hours, and grade points per course</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="pill border border-brand-500/40 bg-brand-500/15 text-brand-300 font-medium">
-                    Cumulative CGPA: {cgpa}
+                  <button
+                    onClick={() => setTranscriptModalOpen(true)}
+                    className="btn-secondary !py-1.5 !px-3 text-xs flex items-center gap-1.5 hover:border-brand-500/50 hover:text-brand-300"
+                  >
+                    <FileText className="h-3.5 w-3.5 text-brand-400" />
+                    <span>Download PDF Transcript</span>
+                  </button>
+                  <span className="pill border border-brand-500/40 bg-brand-500/15 text-brand-300 font-medium font-mono text-xs">
+                    CGPA: {cgpa}
                   </span>
                 </div>
               </div>
@@ -395,36 +408,43 @@ export default function StudentDashboard({ currentUser, onLogout }) {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[680px] text-left text-sm">
+                  <table className="w-full min-w-[720px] text-left text-xs">
                     <thead>
-                      <tr className="border-b border-slate-800/70 text-xs uppercase tracking-wide text-slate-400 bg-slate-900/40">
-                        <th className="px-4 py-3 font-medium">Course</th>
-                        <th className="px-4 py-3 font-medium">Mid Exam</th>
-                        <th className="px-4 py-3 font-medium">Quiz</th>
-                        <th className="px-4 py-3 font-medium">Assignment</th>
-                        <th className="px-4 py-3 font-medium">Final Exam</th>
-                        <th className="px-4 py-3 font-medium">Total (100)</th>
-                        <th className="px-4 py-3 font-medium">Letter Grade</th>
-                        <th className="px-4 py-3 font-medium">GPA</th>
+                      <tr className="border-b border-slate-800/70 text-[11px] uppercase tracking-wide text-slate-400 bg-slate-900/40">
+                        <th className="px-4 py-3 font-semibold">Course</th>
+                        <th className="px-3 py-3 font-semibold text-center w-20">Credits</th>
+                        <th className="px-3 py-3 font-semibold text-center w-20">Mid (20)</th>
+                        <th className="px-3 py-3 font-semibold text-center w-20">Quiz (10)</th>
+                        <th className="px-3 py-3 font-semibold text-center w-20">Assign (20)</th>
+                        <th className="px-3 py-3 font-semibold text-center w-20">Final (50)</th>
+                        <th className="px-3 py-3 font-semibold text-center w-20">Total</th>
+                        <th className="px-3 py-3 font-semibold text-center w-20">Grade</th>
+                        <th className="px-3 py-3 font-semibold text-center w-20">GPA</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-800/60">
                       {grades.map((g) => (
-                        <tr key={g.id} className="border-b border-slate-800/60 transition hover:bg-slate-900/30">
-                          <td className="px-4 py-3.5 font-medium text-slate-100">
-                            {g.course_code} — {g.course_name}
+                        <tr key={g.id} className="transition hover:bg-slate-900/30">
+                          <td className="px-4 py-3 font-medium text-slate-100">
+                            <div>{g.course_code} — {g.course_name}</div>
+                            {g.semester_name && (
+                              <div className="text-[10px] text-indigo-400 font-mono">{g.semester_name}</div>
+                            )}
                           </td>
-                          <td className="px-4 py-3.5 text-slate-300">{g.mid_exam ?? "—"}</td>
-                          <td className="px-4 py-3.5 text-slate-300">{g.quiz ?? "—"}</td>
-                          <td className="px-4 py-3.5 text-slate-300">{g.assignment ?? "—"}</td>
-                          <td className="px-4 py-3.5 text-slate-300">{g.final_exam ?? "—"}</td>
-                          <td className="px-4 py-3.5 font-semibold text-white">{g.total_score}</td>
-                          <td className="px-4 py-3.5">
-                            <span className="pill border border-emerald-700/50 bg-emerald-950/60 text-emerald-300 font-semibold">
+                          <td className="px-3 py-3 text-center font-mono text-slate-300">
+                            {g.credit_hours || 3} CH
+                          </td>
+                          <td className="px-3 py-3 text-center text-slate-300 font-mono">{g.mid_exam ?? "—"}</td>
+                          <td className="px-3 py-3 text-center text-slate-300 font-mono">{g.quiz ?? "—"}</td>
+                          <td className="px-3 py-3 text-center text-slate-300 font-mono">{g.assignment ?? "—"}</td>
+                          <td className="px-3 py-3 text-center text-slate-300 font-mono">{g.final_exam ?? "—"}</td>
+                          <td className="px-3 py-3 text-center font-semibold text-white font-mono">{g.total_score}</td>
+                          <td className="px-3 py-3 text-center">
+                            <span className="pill border border-emerald-700/50 bg-emerald-950/60 text-emerald-300 font-semibold !px-2">
                               {g.letter_grade}
                             </span>
                           </td>
-                          <td className="px-4 py-3.5 font-medium text-indigo-300">{g.gpa}</td>
+                          <td className="px-3 py-3 text-center font-mono font-semibold text-indigo-300">{g.gpa}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -485,6 +505,14 @@ export default function StudentDashboard({ currentUser, onLogout }) {
       <ChangePasswordModal
         open={passwordModalOpen}
         onClose={() => setPasswordModalOpen(false)}
+      />
+
+      {/* Official Academic Transcript PDF Modal */}
+      <AcademicTranscriptModal
+        open={transcriptModalOpen}
+        onClose={() => setTranscriptModalOpen(false)}
+        student={profile}
+        grades={grades}
       />
     </div>
   );
