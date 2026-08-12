@@ -33,13 +33,19 @@ import CourseModal from "./CourseModal.jsx";
 import AnnouncementModal from "./AnnouncementModal.jsx";
 import BatchGradeEntryModal from "./BatchGradeEntryModal.jsx";
 import ChangePasswordModal from "./ChangePasswordModal.jsx";
+import SemesterModal from "./SemesterModal.jsx";
+import ScheduleModal from "./ScheduleModal.jsx";
+import TimetableGrid from "./TimetableGrid.jsx";
+import AcademicTranscriptModal from "./AcademicTranscriptModal.jsx";
 import { useToast } from "./Toast.jsx";
 import {
   studentsApi,
   departmentsApi,
   coursesApi,
   gradesApi,
-  announcementsApi
+  announcementsApi,
+  semestersApi,
+  schedulesApi
 } from "../services/api.js";
 
 export default function AdminDashboard({ currentUser, onLogout }) {
@@ -49,6 +55,8 @@ export default function AdminDashboard({ currentUser, onLogout }) {
   const [departments, setDepartments] = useState([]);
   const [courses, setCourses] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const [activeCount, setActiveCount] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -95,6 +103,18 @@ export default function AdminDashboard({ currentUser, onLogout }) {
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
   const [savingAnnouncement, setSavingAnnouncement] = useState(false);
 
+  // Semester modal
+  const [semesterModalOpen, setSemesterModalOpen] = useState(false);
+  const [editingSemester, setEditingSemester] = useState(null);
+
+  // Schedule modal
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState(null);
+
+  // Transcript modal
+  const [transcriptModalOpen, setTranscriptModalOpen] = useState(false);
+  const [transcriptStudent, setTranscriptStudent] = useState(null);
+
   // Change password modal
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
@@ -108,7 +128,9 @@ export default function AdminDashboard({ currentUser, onLogout }) {
     students: useRef(null),
     departments: useRef(null),
     courses: useRef(null),
-    announcements: useRef(null)
+    announcements: useRef(null),
+    semesters: useRef(null),
+    schedules: useRef(null)
   };
 
   const handleNavigate = (id) => {
@@ -122,18 +144,22 @@ export default function AdminDashboard({ currentUser, onLogout }) {
     setError(null);
 
     try {
-      const [studentsRes, departmentsRes, coursesRes, countRes, announcementsRes] = await Promise.all([
+      const [studentsRes, departmentsRes, coursesRes, countRes, announcementsRes, semestersRes, schedulesRes] = await Promise.all([
         studentsApi.getAll(),
         departmentsApi.getAll(),
         coursesApi.getAll(),
         studentsApi.getCount(),
-        announcementsApi.getAll().catch(() => ({ data: [] }))
+        announcementsApi.getAll().catch(() => ({ data: [] })),
+        semestersApi.getAll().catch(() => ({ data: [] })),
+        schedulesApi.getAll().catch(() => ({ data: [] }))
       ]);
 
       setStudents(studentsRes.data ?? []);
       setDepartments(departmentsRes.data ?? []);
       setCourses(coursesRes.data ?? []);
       setAnnouncements(announcementsRes.data ?? []);
+      setSemesters(semestersRes.data ?? []);
+      setSchedules(schedulesRes.data ?? []);
       setActiveCount(countRes.data?.total ?? studentsRes.data?.length ?? 0);
       setApiStatus("online");
     } catch (err) {
@@ -683,6 +709,105 @@ export default function AdminDashboard({ currentUser, onLogout }) {
           </section>
         </div>
 
+        {/* Semesters & Class Timetable Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Academic Semesters Section */}
+          <section ref={sectionRefs.semesters} className="glass-panel scroll-mt-24 p-5">
+            <div className="mb-4 flex items-center justify-between border-b border-slate-800/80 pb-3">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4.5 w-4.5 text-brand-400" />
+                <h3 className="font-display text-base font-semibold text-white">Academic Semesters</h3>
+              </div>
+              <button
+                onClick={() => { setEditingSemester(null); setSemesterModalOpen(true); }}
+                className="btn-primary !py-1.5 !text-xs"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add Term
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="space-y-2">
+                <div className="skeleton h-8 w-full" />
+                <div className="skeleton h-8 w-full" />
+              </div>
+            ) : semesters.length === 0 ? (
+              <p className="py-6 text-center text-xs text-slate-500">No semesters defined yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {semesters.map((s) => (
+                  <li
+                    key={s.id}
+                    className="flex items-center justify-between rounded-lg border border-slate-800/70 bg-slate-900/50 px-3 py-2 text-xs"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-slate-200">{s.name}</span>
+                        {s.is_current ? (
+                          <span className="pill border border-emerald-500/40 bg-emerald-950/60 text-emerald-300 text-[10px] font-semibold">
+                            Active
+                          </span>
+                        ) : null}
+                      </div>
+                      <span className="text-[11px] text-slate-500">
+                        {s.academic_year} • {s.course_count || 0} course{s.course_count === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => { setEditingSemester(s); setSemesterModalOpen(true); }}
+                        className="rounded p-1 text-slate-400 hover:text-indigo-300"
+                        title="Edit Semester"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (confirm(`Delete semester "${s.name}"?`)) {
+                            try {
+                              await semestersApi.remove(s.id);
+                              toast.success("Semester deleted");
+                              loadAll({ silent: true });
+                            } catch (e) {
+                              toast.error(e.message || "Failed to delete");
+                            }
+                          }
+                        }}
+                        className="rounded p-1 text-slate-400 hover:text-rose-400"
+                        title="Delete Semester"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {/* Timetable Class Schedule Manager */}
+          <section ref={sectionRefs.schedules} className="lg:col-span-2 scroll-mt-24">
+            <TimetableGrid
+              schedules={schedules}
+              isAdmin={true}
+              onAdd={() => { setEditingSchedule(null); setScheduleModalOpen(true); }}
+              onEdit={(slot) => { setEditingSchedule(slot); setScheduleModalOpen(true); }}
+              onDelete={async (slot) => {
+                if (confirm(`Delete ${slot.course_code} class on ${slot.day_of_week}?`)) {
+                  try {
+                    await schedulesApi.remove(slot.id);
+                    toast.success("Class schedule removed");
+                    loadAll({ silent: true });
+                  } catch (e) {
+                    toast.error(e.message || "Failed to delete schedule");
+                  }
+                }
+              }}
+            />
+          </section>
+        </div>
+
         {/* Enrollment Chart */}
         <section className="glass-panel p-5">
           <h3 className="mb-4 font-display text-sm font-semibold text-white">Enrollment Distribution</h3>
@@ -701,6 +826,10 @@ export default function AdminDashboard({ currentUser, onLogout }) {
             onAssignCourse={openAssignModal}
             onDelete={setDeleteTarget}
             onEnterGrades={openSubmitGradeFromHeader}
+            onViewTranscript={(s) => {
+              setTranscriptStudent(s);
+              setTranscriptModalOpen(true);
+            }}
           />
         </section>
       </main>
@@ -807,6 +936,7 @@ export default function AdminDashboard({ currentUser, onLogout }) {
         onClose={() => setCourseModalOpen(false)}
         onSubmit={handleSubmitCourse}
         departments={departments}
+        semesters={semesters}
         initialCourse={editingCourse}
         submitting={savingCourse}
       />
@@ -816,6 +946,26 @@ export default function AdminDashboard({ currentUser, onLogout }) {
         onSubmit={handleSubmitAnnouncement}
         initialAnnouncement={editingAnnouncement}
         submitting={savingAnnouncement}
+      />
+      <SemesterModal
+        open={semesterModalOpen}
+        onClose={() => setSemesterModalOpen(false)}
+        semester={editingSemester}
+        onSuccess={() => loadAll({ silent: true })}
+      />
+      <ScheduleModal
+        open={scheduleModalOpen}
+        onClose={() => setScheduleModalOpen(false)}
+        schedule={editingSchedule}
+        courses={courses}
+        onSuccess={() => loadAll({ silent: true })}
+      />
+      <AcademicTranscriptModal
+        open={transcriptModalOpen}
+        onClose={() => { setTranscriptModalOpen(false); setTranscriptStudent(null); }}
+        student={transcriptStudent}
+        grades={transcriptStudent?.courses || []}
+        semesters={semesters}
       />
       <ChangePasswordModal
         open={passwordModalOpen}
