@@ -1,6 +1,7 @@
 import { Github, Mail, ShieldCheck, Twitter, Linkedin,GraduationCap, Instagram } from "lucide-react";
 import logo from "../images/logo.png";
 
+
 // Update these URLs to your real profiles.
 const SOCIAL_LINKS = [
   { id: "github", label: "GitHub", icon: Github, href: "https://github.com/your-username" },
