@@ -4,8 +4,8 @@
  * -----------------------------------------------------
  * requireRole(...roles)      -> only allow specific roles
  * verifyStudentOwnership     -> a 'student' may only act on
- *                                their OWN student_id; 'admin'
- *                                always passes. Prevents IDOR.
+ *                                their OWN student_id; 'admin' & 'teacher'
+ *                                always pass. Prevents IDOR.
  *
  * Expects req.user to already be set by requireAuth, shaped:
  *   { id, role, studentId, username }
@@ -31,7 +31,7 @@ const verifyStudentOwnership = (paramName = "id") => (req, res, next) => {
         return res.status(401).json({ success: false, message: "Not authenticated" });
     }
 
-    if (req.user.role === "admin") return next();
+    if (req.user.role === "admin" || req.user.role === "teacher") return next();
 
     const targetId = req.params[paramName];
 
