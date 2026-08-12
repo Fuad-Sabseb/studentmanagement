@@ -13,15 +13,15 @@ const { validateGrade } = require("../middleware/validateMiddleware");
 // Student self-service (no :id param -> uses req.user.studentId, no IDOR surface)
 router.get("/my-grades", gradeController.getMyGrades);
 
-// Admin, or the owning student, viewing a specific student's grades
+// Admin, Teacher, or the owning student, viewing a specific student's grades
 router.get("/student/:studentId", verifyStudentOwnership("studentId"), gradeController.getGradesForStudent);
 router.get("/student/:studentId/course/:courseId", verifyStudentOwnership("studentId"), gradeController.getGradeByStudentAndCourse);
 
-// Admin-only grade entry/management
-router.get("/course/:courseId", requireRole("admin"), gradeController.getCourseStudentsAndGrades);
-router.post("/batch", requireRole("admin"), gradeController.batchEnterGrades);
-router.post("/", requireRole("admin"), validateGrade, gradeController.enterGrade);
-router.put("/:id", requireRole("admin"), validateGrade, gradeController.updateGrade);
+// Admin and Teacher grade entry/management
+router.get("/course/:courseId", requireRole("admin", "teacher"), gradeController.getCourseStudentsAndGrades);
+router.post("/batch", requireRole("admin", "teacher"), gradeController.batchEnterGrades);
+router.post("/", requireRole("admin", "teacher"), validateGrade, gradeController.enterGrade);
+router.put("/:id", requireRole("admin", "teacher"), validateGrade, gradeController.updateGrade);
 router.delete("/:id", requireRole("admin"), gradeController.deleteGrade);
 
 module.exports = router;
