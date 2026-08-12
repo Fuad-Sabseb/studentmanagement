@@ -33,10 +33,28 @@ const BASE_SELECT = `
         COALESCE(
             (
                 SELECT JSON_ARRAYAGG(
-                    JSON_OBJECT('id', c.id, 'name', c.name, 'code', c.code)
+                    JSON_OBJECT(
+                        'id', c.id,
+                        'name', c.name,
+                        'code', c.code,
+                        'mid_exam', g.mid_exam,
+                        'quiz', g.quiz,
+                        'assignment', g.assignment,
+                        'final_exam', g.final_exam,
+                        'total_score', g.total_score,
+                        'letter_grade', g.letter_grade,
+                        'gpa', g.gpa,
+                        'status', CASE
+                            WHEN g.id IS NULL THEN 'not_inserted'
+                            WHEN (g.final_exam > 0) OR (g.total_score > 0 AND g.letter_grade IS NOT NULL AND g.final_exam > 0) THEN 'inserted'
+                            WHEN g.mid_exam > 0 OR g.quiz > 0 OR g.assignment > 0 THEN 'partial'
+                            ELSE 'not_inserted'
+                        END
+                    )
                 )
                 FROM student_courses sc
                 JOIN courses c ON c.id = sc.course_id
+                LEFT JOIN grades g ON g.student_id = sc.student_id AND g.course_id = sc.course_id
                 WHERE sc.student_id = s.id
             ),
             JSON_ARRAY()
