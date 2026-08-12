@@ -157,3 +157,28 @@ export const announcementsApi = {
   update: (id, payload) => request(`/announcements/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   remove: (id) => request(`/announcements/${id}`, { method: "DELETE" })
 };
+
+/* ------------------------------------------------------------------ */
+/* Semesters / Academic Terms                                         */
+/* ------------------------------------------------------------------ */
+
+export const semestersApi = {
+  getAll: () => request("/semesters"),
+  getById: (id) => request(`/semesters/${id}`),
+  create: (payload) => request("/semesters", { method: "POST", body: JSON.stringify(payload) }),
+  update: (id, payload) => request(`/semesters/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  remove: (id) => request(`/semesters/${id}`, { method: "DELETE" })
+};
+
+/* ------------------------------------------------------------------ */
+/* Class Schedules / Timetables                                       */
+/* ------------------------------------------------------------------ */
+
+export const schedulesApi = {
+  getAll: () => request("/schedules"),
+  getMySchedule: () => request("/schedules/my-schedule"),
+  getById: (id) => request(`/schedules/${id}`),
+  create: (payload) => request("/schedules", { method: "POST", body: JSON.stringify(payload) }),
+  update: (id, payload) => request(`/schedules/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  remove: (id) => request(`/schedules/${id}`, { method: "DELETE" })
+};
