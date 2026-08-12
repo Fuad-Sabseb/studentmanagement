@@ -9,7 +9,8 @@ import {
   Phone,
   Users,
   Inbox,
-  ServerCrash
+  ServerCrash,
+  GraduationCap
 } from "lucide-react";
 
 function StatusBadge({ children, tone = "slate" }) {
@@ -63,7 +64,8 @@ export default function StudentTable({
   onRetry,
   onEdit,
   onAssignCourse,
-  onDelete
+  onDelete,
+  onEnterGrades
 }) {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all"); // "all" | "byDepartment"
@@ -222,18 +224,48 @@ export default function StudentTable({
                           {(s.courses || []).length === 0 ? (
                             <span className="text-xs text-slate-600">No courses</span>
                           ) : (
-                            s.courses.slice(0, 3).map((c) => (
-                              <span
-                                key={c.id}
-                                className="pill border border-indigo-800/50 bg-indigo-950/50 text-indigo-300"
-                              >
-                                {c.code}
-                              </span>
-                            ))
+                            s.courses.slice(0, 4).map((c) => {
+                              const isInserted = c.status === "inserted" || (c.letter_grade && c.final_exam > 0);
+                              const isPartial = c.status === "partial" || (c.mid_exam > 0 && !isInserted);
+
+                              if (isInserted) {
+                                return (
+                                  <span
+                                    key={c.id}
+                                    className="pill border border-emerald-500/40 bg-emerald-950/60 text-emerald-300 font-medium"
+                                    title={`${c.code}: Marks Inserted! Score: ${c.total_score}, Grade: ${c.letter_grade}, GPA: ${c.gpa}`}
+                                  >
+                                    ✓ {c.code} {c.letter_grade ? `(${c.letter_grade})` : ""}
+                                  </span>
+                                );
+                              }
+
+                              if (isPartial) {
+                                return (
+                                  <span
+                                    key={c.id}
+                                    className="pill border border-amber-500/40 bg-amber-950/60 text-amber-300 font-medium"
+                                    title={`${c.code}: Mid Exam Inserted (${c.mid_exam} pts). Final Exam pending.`}
+                                  >
+                                    ⏳ {c.code} (Mid)
+                                  </span>
+                                );
+                              }
+
+                              return (
+                                <span
+                                  key={c.id}
+                                  className="pill border border-slate-700/60 bg-slate-900/60 text-slate-400"
+                                  title={`${c.code} — ${c.name} (No marks inserted yet)`}
+                                >
+                                  {c.code}
+                                </span>
+                              );
+                            })
                           )}
-                          {s.courses?.length > 3 && (
+                          {s.courses?.length > 4 && (
                             <span className="pill border border-slate-700/60 bg-slate-800/60 text-slate-400">
-                              +{s.courses.length - 3}
+                              +{s.courses.length - 4}
                             </span>
                           )}
                         </div>
@@ -252,6 +284,14 @@ export default function StudentTable({
                             aria-label={`Assign course to ${s.name}`}
                           >
                             <BookPlus className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => onEnterGrades(s)}
+                            className="rounded-lg p-2 text-slate-400 transition hover:bg-emerald-500/10 hover:text-emerald-300"
+                            title="Enter grades"
+                            aria-label={`Enter grades for ${s.name}`}
+                          >
+                            <GraduationCap className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => onEdit(s)}
