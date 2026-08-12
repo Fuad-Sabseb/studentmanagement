@@ -1,23 +1,7 @@
 /**
- * =====================================================
- * seedStudentCredentials.js
- * -----------------------------------------------------
- * Generates a login username + a securely hashed password
- * for every active student that doesn't have one yet.
- *
- * Run once after applying auth-migration.sql:
- *   cd backend
- *   node scripts/seedStudentCredentials.js
- *
- * Username = the part of their email before the "@"
- * (e.g. fuad.sabseb@example.com -> fuad.sabseb)
- *
- * Every generated student starts with the SAME temporary
- * password below. Change it, and consider adding a
- * "change password on first login" flow before real use.
- * =====================================================
+ * Generates a login username + hashed password for every active student
+ * that doesn't yet have a `users` row. Run:  node scripts/seedStudentCredentials.js
  */
-
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const { pool } = require("../src/config/db");
@@ -25,9 +9,12 @@ const { pool } = require("../src/config/db");
 const DEFAULT_PASSWORD = "Student@123";
 
 async function run() {
-    const [students] = await pool.query(
-        "SELECT id, name, email FROM students WHERE is_deleted = FALSE AND (username IS NULL OR password_hash IS NULL)"
-    );
+    const [students] = await pool.query(`
+        SELECT s.id, s.name, s.email
+        FROM students s
+        LEFT JOIN users u ON u.student_id = s.id
+        WHERE s.is_deleted = FALSE AND u.id IS NULL
+    `);
 
     if (students.length === 0) {
         console.log("Every active student already has login credentials. Nothing to do.");
@@ -38,10 +25,14 @@ async function run() {
     const generated = [];
 
     for (const student of students) {
-        const username = student.email.split("@")[0].toLowerCase();
+        let username = student.email.split("@")[0].toLowerCase();
+
+        // Ensure username uniqueness even if two students share an email prefix
+        const [clash] = await pool.query("SELECT id FROM users WHERE username = ?", [username]);
+        if (clash.length > 0) username = `${username}${student.id}`;
 
         await pool.execute(
-            "UPDATE students SET username = ?, password_hash = ? WHERE id = ?",
+            "INSERT INTO users (username, password_hash, role, student_id) VALUES (?, ?, 'student', ?)",
             [username, passwordHash, student.id]
         );
 
@@ -50,10 +41,7 @@ async function run() {
 
     console.log("\nGenerated login credentials (share these with each student):\n");
     console.table(generated);
-    console.log(
-        "\nEach student should log in once and change their password. Add a 'change password' endpoint before using this in production.\n"
-    );
-
+    console.log("\nEach student should change their password after first login.\n");
     process.exit(0);
 }
 
