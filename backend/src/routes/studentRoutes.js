@@ -19,15 +19,15 @@ const {
 
 // Order matters — literal routes before "/:id"
 
-// Admin-only analytics/listing endpoints
-router.get("/count", requireRole("admin"), studentController.getStudentCount);
-router.get("/department/:dept", requireRole("admin"), studentController.getStudentsByDepartment);
+// Admin and Teacher listing endpoints
+router.get("/count", requireRole("admin", "teacher"), studentController.getStudentCount);
+router.get("/department/:dept", requireRole("admin", "teacher"), studentController.getStudentsByDepartment);
 
 // Admin-only creation
 router.post("/", requireRole("admin"), validateCreateStudent, studentController.createStudent);
 
-// Admin-only: full roster listing
-router.get("/", requireRole("admin"), studentController.getAllStudents);
+// Admin and Teacher: full roster listing
+router.get("/", requireRole("admin", "teacher"), studentController.getAllStudents);
 
 // Student self-profile (no :id param)
 router.get("/me", studentController.getMyProfile);
