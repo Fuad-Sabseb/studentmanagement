@@ -1,15 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 
-/**
- * A single glassmorphic metric card.
- *
- * value        - the number/string to display prominently
- * label        - small caption under the value
- * icon         - lucide-react icon component
- * accent       - tailwind color token used for the icon chip + glow
- * loading      - shows a skeleton bar instead of the value
- * trend        - optional small string e.g. "+2 this week"
- */
+
 export default function AnalyticsCard({ label, value, icon: Icon, accent = "brand", loading, trend }) {
   const accentClasses = {
     brand: "from-brand-500/20 to-brand-500/5 text-brand-300 ring-brand-500/30",

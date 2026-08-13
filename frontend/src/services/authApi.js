@@ -1,12 +1,4 @@
-/**
- * =====================================================
- * authApi.js
- * -----------------------------------------------------
- * Login / logout / session helpers. Stores the JWT and the
- * logged-in user's role + studentId in localStorage so the
- * session survives a page refresh.
- * =====================================================
- */
+
 import { API_BASE_URL } from "./api.js";
 
 const TOKEN_KEY = "cohort_auth_token";
@@ -34,7 +26,7 @@ export const authApi = {
     localStorage.setItem(TOKEN_KEY, payload.token);
     localStorage.setItem(USER_KEY, JSON.stringify(payload.user));
 
-    return payload.user; // { id, username, role, studentId }
+    return payload.user; 
   },
 
   logout() {
