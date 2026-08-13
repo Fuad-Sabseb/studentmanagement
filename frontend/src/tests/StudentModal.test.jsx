@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import StudentModal from "../components/StudentModal.jsx";
 
 describe("StudentModal component", () => {
+  // Test that the modal appears when open is true
   it("renders modal when open", () => {
     render(
       <StudentModal
@@ -12,6 +13,7 @@ describe("StudentModal component", () => {
         departments={[{ id: 1, name: "Computer Science" }]}
       />
     );
+
     expect(screen.getByText("Add New Student")).toBeInTheDocument();
   });
 });

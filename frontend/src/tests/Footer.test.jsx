@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import Footer from "../components/Footer.jsx";
 
 describe("Footer", () => {
+  // Test that the footer displays the expected information
   test("renders brand, nav links, and copyright", () => {
     render(<Footer apiStatus="online" activeCount={5} />);
 
@@ -12,6 +13,7 @@ describe("Footer", () => {
     expect(screen.getByText(/© \d{4} Student Management/)).toBeInTheDocument();
   });
 
+  // Test that the footer displays the offline API status correctly
   test("reflects an offline API status", () => {
     render(<Footer apiStatus="offline" activeCount={0} />);
     expect(screen.getByText(/currently: api unreachable/i)).toBeInTheDocument();

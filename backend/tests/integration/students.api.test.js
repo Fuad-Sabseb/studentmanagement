@@ -11,6 +11,7 @@
  * mock would be removed — the test bodies stay identical.
  */
 
+// Mock the database so tests do not require a real MySQL connection.
 jest.mock("../../src/config/db", () => ({
     pool: {
         execute: jest.fn(),
@@ -23,11 +24,13 @@ const request = require("supertest");
 const { pool } = require("../../src/config/db");
 const app = require("../../src/app");
 
+// Reset database mocks before every test.
 beforeEach(() => {
     jest.clearAllMocks();
 });
 
 describe("POST /api/students", () => {
+    // Test successful student creation.
     test("creates a student and returns 201", async () => {
         pool.execute.mockResolvedValue([{ insertId: 1 }]);
 
@@ -40,6 +43,7 @@ describe("POST /api/students", () => {
         expect(res.body.id).toBe(1);
     });
 
+    // Test validation when required student data is missing.
     test("returns 400 when required fields are missing", async () => {
         const res = await request(app).post("/api/students").send({ name: "No Email" });
 
@@ -48,6 +52,7 @@ describe("POST /api/students", () => {
         expect(pool.execute).not.toHaveBeenCalled();
     });
 
+    // Test validation for an incorrectly formatted email.
     test("returns 400 when email is malformed", async () => {
         const res = await request(app)
             .post("/api/students")
@@ -58,6 +63,7 @@ describe("POST /api/students", () => {
 });
 
 describe("GET /api/students", () => {
+    // Test that active students are returned successfully.
     test("returns the list of active students", async () => {
         pool.query.mockResolvedValue([[
             { id: 1, name: "Fuad Sabseb", is_deleted: 0 },
@@ -71,6 +77,7 @@ describe("GET /api/students", () => {
         expect(res.body.data).toHaveLength(2);
     });
 
+    // Test the response when there are no active students.
     test("returns an empty array when there are no active students", async () => {
         pool.query.mockResolvedValue([[]]);
 
@@ -82,6 +89,7 @@ describe("GET /api/students", () => {
 });
 
 describe("GET /api/students/count", () => {
+    // Test that the total number of active students is returned.
     test("returns the total number of active students", async () => {
         pool.query.mockResolvedValue([[{ total: 5 }]]);
 
@@ -93,6 +101,7 @@ describe("GET /api/students/count", () => {
 });
 
 describe("GET /api/students/department/:dept", () => {
+    // Test filtering students by department.
     test("returns students filtered by department", async () => {
         pool.query.mockResolvedValue([[{ id: 1, name: "Fuad Sabseb", department_name: "Software Engineering" }]]);
 
@@ -104,8 +113,9 @@ describe("GET /api/students/department/:dept", () => {
 });
 
 describe("PUT /api/students/:id", () => {
+    // Test successful student information update.
     test("updates a student", async () => {
-        pool.query.mockResolvedValue([[{ id: 1 }]]); // studentExists check
+        pool.query.mockResolvedValue([[{ id: 1 }]]); // Check that the student exists
         pool.execute.mockResolvedValue([{ affectedRows: 1 }]);
 
         const res = await request(app)
@@ -116,8 +126,9 @@ describe("PUT /api/students/:id", () => {
         expect(res.body.success).toBe(true);
     });
 
+    // Test that updating a non-existent student returns 404.
     test("returns 404 when the student does not exist", async () => {
-        pool.query.mockResolvedValue([[]]); // studentExists check -> not found
+        pool.query.mockResolvedValue([[]]); // Student does not exist
 
         const res = await request(app)
             .put("/api/students/999")
@@ -126,6 +137,7 @@ describe("PUT /api/students/:id", () => {
         expect(res.status).toBe(404);
     });
 
+    // Test validation of invalid update data.
     test("returns 400 when payload invalid", async () => {
         const res = await request(app).put("/api/students/1").send({ name: "" });
         expect(res.status).toBe(400);
@@ -133,8 +145,9 @@ describe("PUT /api/students/:id", () => {
 });
 
 describe("DELETE /api/students/:id (soft delete)", () => {
+    // Test that an existing student is soft-deleted.
     test("soft-deletes an existing student", async () => {
-        pool.query.mockResolvedValue([[{ id: 1 }]]); // studentExists
+        pool.query.mockResolvedValue([[{ id: 1 }]]); // Check that the student exists
         pool.execute.mockResolvedValue([{ affectedRows: 1 }]);
 
         const res = await request(app).delete("/api/students/1");
@@ -147,6 +160,7 @@ describe("DELETE /api/students/:id (soft delete)", () => {
         );
     });
 
+    // Test that deleting a non-existent student returns 404.
     test("returns 404 for a non-existent student", async () => {
         pool.query.mockResolvedValue([[]]);
 
@@ -157,10 +171,11 @@ describe("DELETE /api/students/:id (soft delete)", () => {
 });
 
 describe("POST /api/students/:id/courses (assign course)", () => {
+    // Test successfully assigning a course to a student.
     test("assigns a course to a student", async () => {
         pool.query
-            .mockResolvedValueOnce([[{ id: 1 }]]) // studentExists
-            .mockResolvedValueOnce([[{ id: 3, name: "DSA" }]]); // getCourseById
+            .mockResolvedValueOnce([[{ id: 1 }]]) // Check that the student exists
+            .mockResolvedValueOnce([[{ id: 3, name: "DSA" }]]); // Check that the course exists
         pool.execute.mockResolvedValue([{ affectedRows: 1 }]);
 
         const res = await request(app).post("/api/students/1/courses").send({ course_id: 3 });
@@ -169,6 +184,7 @@ describe("POST /api/students/:id/courses (assign course)", () => {
         expect(res.body.success).toBe(true);
     });
 
+    // Test validation when course_id is missing.
     test("returns 400 when course_id missing", async () => {
         const res = await request(app).post("/api/students/1/courses").send({});
         expect(res.status).toBe(400);
@@ -176,6 +192,7 @@ describe("POST /api/students/:id/courses (assign course)", () => {
 });
 
 describe("Unknown route", () => {
+    // Test that undefined API routes return a 404 response.
     test("returns 404 for an undefined route", async () => {
         const res = await request(app).get("/api/nonexistent");
         expect(res.status).toBe(404);
