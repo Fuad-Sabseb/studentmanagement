@@ -1,0 +1,152 @@
+92a0c0e | 2026-08-12 | Fuad-Sabseb | Update unit tests for StudentTable component
+6cd8460 | 2026-08-12 | Fuad-Sabseb | Update unit tests for StudentModal component
+abf7d45 | 2026-08-12 | Fuad-Sabseb | Update main App routing and view handlers
+f3789e5 | 2026-08-12 | Fuad-Sabseb | Add AcademicTranscriptModal component
+3dcbdab | 2026-08-12 | Fuad-Sabseb | Add TimetableGrid component for class schedules
+fe28f31 | 2026-08-12 | Fuad-Sabseb | Add ScheduleModal component
+419f4b8 | 2026-08-12 | Fuad-Sabseb | Add SemesterModal component
+56026e9 | 2026-08-12 | Fuad-Sabseb | Update CourseModal component
+0babb39 | 2026-08-12 | Fuad-Sabseb | Update StudentTable component
+e28451c | 2026-08-12 | Fuad-Sabseb | Add TeacherDashboard component
+482db97 | 2026-08-12 | Fuad-Sabseb | Update StudentDashboard component
+2b9da8d | 2026-08-12 | Fuad-Sabseb | Update AdminDashboard component
+b2c5785 | 2026-08-12 | Fuad-Sabseb | Update API service utilities and interceptors
+b58e7fe | 2026-08-12 | Fuad-Sabseb | Register semester and schedule routes in app.js
+b2aa8c8 | 2026-08-12 | Fuad-Sabseb | Add schedule management API routes
+f987767 | 2026-08-12 | Fuad-Sabseb | Add semester management API routes
+39823be | 2026-08-12 | Fuad-Sabseb | Update student API routes
+a832985 | 2026-08-12 | Fuad-Sabseb | Update grade API routes
+2975f00 | 2026-08-12 | Fuad-Sabseb | Add schedule controller logic
+c72616d | 2026-08-12 | Fuad-Sabseb | Add class schedule data model
+7b0e874 | 2026-08-12 | Fuad-Sabseb | Add semester controller logic
+f9dd295 | 2026-08-12 | Fuad-Sabseb | Add semester data model
+219361e | 2026-08-12 | Fuad-Sabseb | Update grade data model
+82d63f5 | 2026-08-12 | Fuad-Sabseb | Update course data model
+426b19d | 2026-08-12 | Fuad-Sabseb | Update RBAC middleware logic
+0023923 | 2026-08-12 | Fuad-Sabseb | Update database configuration
+e9fc832 | 2026-08-12 | Fuad-Sabseb | Add project documentation report
+dbafe8a | 2026-08-12 | Fuad-Sabseb | Update API documentation
+ec8f630 | 2026-08-12 | Fuad-Sabseb | Update root project configuration and dependencies
+951ed3a | 2026-08-12 | Fuad-Sabseb | Update Header component unit tests
+9ccc59d | 2026-08-12 | Fuad-Sabseb | Update main App component routing
+a35d42f | 2026-08-12 | Fuad-Sabseb | Add UpdateStudentModal component
+6a49ff0 | 2026-08-12 | Fuad-Sabseb | Add DepartmentModal component
+7ead92f | 2026-08-12 | Fuad-Sabseb | Add CourseModal component
+e7480b1 | 2026-08-12 | Fuad-Sabseb | Add ChangePasswordModal component
+18944f0 | 2026-08-12 | Fuad-Sabseb | Add GradeEntryModal component
+00f68d9 | 2026-08-12 | Fuad-Sabseb | Add BatchGradeEntryModal component
+25d6deb | 2026-08-12 | Fuad-Sabseb | Add AnnouncementModal component
+5683cd9 | 2026-08-12 | Fuad-Sabseb | Update StudentTable component
+2b44a37 | 2026-08-12 | Fuad-Sabseb | Update Footer component
+b616aea | 2026-08-12 | Fuad-Sabseb | Update Header component
+3b7f337 | 2026-08-12 | Fuad-Sabseb | Add StudentDashboard component
+e330e9b | 2026-08-12 | Fuad-Sabseb | Add AdminDashboard component
+0c1a82a | 2026-08-12 | Fuad-Sabseb | Add ProtectedRoute component for RBAC routing
+144db52 | 2026-08-12 | Fuad-Sabseb | Update Login page component
+e841e02 | 2026-08-12 | Fuad-Sabseb | Update authentication API service
+4472ab0 | 2026-08-12 | Fuad-Sabseb | Update base API service configuration
+1b5233b | 2026-08-12 | Fuad-Sabseb | Update frontend package lockfile
+21261ea | 2026-08-12 | Fuad-Sabseb | Update frontend package dependencies
+875e5e8 | 2026-08-12 | Fuad-Sabseb | Add announcement API routes
+254db77 | 2026-08-12 | Fuad-Sabseb | Add grade API routes
+b2aeeb9 | 2026-08-12 | Fuad-Sabseb | Update department API routes
+9b0262c | 2026-08-12 | Fuad-Sabseb | Update course API routes
+7c40b66 | 2026-08-12 | Fuad-Sabseb | Update student API routes
+93ac5f6 | 2026-08-12 | Fuad-Sabseb | Update auth API routes
+2cfe43a | 2026-08-12 | Fuad-Sabseb | Add announcement controller logic
+4758ba1 | 2026-08-12 | Fuad-Sabseb | Add grade controller logic
+b2455ce | 2026-08-12 | Fuad-Sabseb | Update student controller logic
+8400099 | 2026-08-12 | Fuad-Sabseb | Update auth controller logic
+12043c2 | 2026-08-12 | Fuad-Sabseb | Update validation middleware
+688c616 | 2026-08-12 | Fuad-Sabseb | Add role-based access control middleware
+3822839 | 2026-08-12 | Fuad-Sabseb | Update authentication middleware
+9334346 | 2026-08-12 | Fuad-Sabseb | Update student model
+5f9ab90 | 2026-08-12 | Fuad-Sabseb | Add announcement model
+b3caa37 | 2026-08-12 | Fuad-Sabseb | Add grade model
+ca6292e | 2026-08-12 | Fuad-Sabseb | Add user model for authentication and roles
+6a21698 | 2026-08-12 | Fuad-Sabseb | Register new RBAC, grade, and announcement routes in app.js
+fd37884 | 2026-08-12 | Fuad-Sabseb | Update database connection configuration
+02238be | 2026-08-12 | Fuad-Sabseb | Update student credentials seeding script
+d525ddc | 2026-08-12 | Fuad-Sabseb | Add admin user seeding script
+94c4ec6 | 2026-08-12 | Fuad-Sabseb | Add RBAC database migration fix script
+7bd206f | 2026-08-12 | Fuad-Sabseb | Add RBAC database migration script
+79f388a | 2026-08-12 | Fuad-Sabseb | Update core database schema definition
+b74b4c2 | 2026-08-11 | Fuad-Sabseb | Update App routing and protected route logic
+5dbd7c5 | 2026-08-11 | Fuad-Sabseb | Update Footer component
+3a23b6c | 2026-08-11 | Fuad-Sabseb | Update Header component with auth user controls
+9654cf3 | 2026-08-11 | Fuad-Sabseb | Add Login page component
+2189988 | 2026-08-11 | Fuad-Sabseb | Update base API configuration and interceptors
+82b0a5d | 2026-08-11 | Fuad-Sabseb | Add authentication API service handler
+cb60dc6 | 2026-08-11 | Fuad-Sabseb | Update backend dependencies for auth
+238cebc | 2026-08-11 | Fuad-Sabseb | Integrate authentication routes in app.js
+4bc0fc0 | 2026-08-11 | Fuad-Sabseb | Add authentication API routes
+62dcf9f | 2026-08-11 | Fuad-Sabseb | Add authentication controller logic
+34bf943 | 2026-08-11 | Fuad-Sabseb | Add JWT authentication middleware
+d228cf3 | 2026-08-11 | Fuad-Sabseb | Add authentication database model
+95af896 | 2026-08-11 | Fuad-Sabseb | Add backend utility and setup scripts
+75e98db | 2026-08-11 | Fuad-Sabseb | Add authentication database migration script
+fa64946 | 2026-08-11 | Fuad-Sabseb | Update application logo image
+44187f4 | 2026-08-10 | Fuad-Sabseb | Update main App component
+25b03e6 | 2026-08-10 | Fuad-Sabseb | Update React entry point in main.jsx
+2af7fde | 2026-08-10 | Fuad-Sabseb | Add backend environment template
+342748a | 2026-08-10 | Fuad-Sabseb | Update global styles in index.css
+9cb58b3 | 2026-08-10 | Fuad-Sabseb | Add frontend environment template
+4992dc0 | 2026-08-10 | Fuad-Sabseb | Configure Tailwind CSS setup
+0178316 | 2026-08-10 | Fuad-Sabseb | Configure PostCSS for frontend
+37b4d41 | 2026-08-10 | Fuad-Sabseb | Update frontend package lockfile
+ce7d752 | 2026-08-10 | Fuad-Sabseb | Update frontend dependencies in package.json
+aaffdc8 | 2026-08-10 | Fuad-Sabseb | Add Vite configuration file
+479c06d | 2026-08-10 | Fuad Sbaseb | Merge pull request #9 from Fuad-Sabseb/backend
+89ad63e | 2026-08-10 | Fuad-Sabseb | Add unit tests for validation middleware
+85ef9de | 2026-08-10 | Fuad-Sabseb | Add unit tests for student model
+e8c6149 | 2026-08-10 | Fuad-Sabseb | Add unit tests for student controller
+5450f00 | 2026-08-10 | Fuad-Sabseb | Add integration tests for students API
+6a2d877 | 2026-08-10 | Fuad-Sabseb | Add integration tests for departments and courses API
+79bff35 | 2026-08-10 | Olyad73 | Merge pull request #8 from Fuad-Sabseb/database
+5fb3e7c | 2026-08-10 | Bantayehudegefu | Merge pull request #7 from Fuad-Sabseb/frontend
+c90bfe8 | 2026-08-10 | Bantayehu Degefu | Update test setup configuration
+cbf5c16 | 2026-08-10 | Bantayehu Degefu | Update root index.html
+726b847 | 2026-08-10 | Hundesa Tesfa | Merge pull request #6 from Fuad-Sabseb/frontend
+c4f0bd4 | 2026-08-10 | hundesatesfa-debug | Update API unit tests
+22a050c | 2026-08-10 | hundesatesfa-debug | Update unit tests for Footer component
+92a7705 | 2026-08-10 | hundesatesfa-debug | Update API service layer
+f610ac8 | 2026-08-10 | Hundesa Tesfa | Merge pull request #5 from Fuad-Sabseb/frontend
+6b033cf | 2026-08-10 | hundesatesfa-debug | Update Toast component
+a9d154b | 2026-08-10 | hundesatesfa-debug | Update StudentTable component
+82243f6 | 2026-08-10 | hundesatesfa-debug | Update StudentModal component
+fa933bc | 2026-08-10 | hundesatesfa-debug | Update Header component
+150d954 | 2026-08-10 | hundesatesfa-debug | Update Footer component
+2601fa4 | 2026-08-10 | hundesatesfa-debug | Update EnrollmentChart component
+1c01ae9 | 2026-08-10 | hundesatesfa-debug | Update CourseAssignModal component
+515ac2a | 2026-08-10 | hundesatesfa-debug | Update ConfirmDeleteModal component
+4f827ee | 2026-08-10 | hundesatesfa-debug | Update AnalyticsCard component
+e39e697 | 2026-08-10 | Fuad Sbaseb | Merge pull request #4 from Fuad-Sabseb/backend
+7851e82 | 2026-08-10 | Fuad-Sabseb | Remove duplicate courseRoutes.js from root directory
+fb53a9b | 2026-08-10 | Fuad-Sabseb | Update server entry point setup
+c5cb37b | 2026-08-10 | Fuad-Sabseb | Update application configuration in app.js
+eee4dd3 | 2026-08-10 | Fuad-Sabseb | Add root course routes file
+94ee17c | 2026-08-10 | Fuad-Sabseb | Add department routes
+afcced1 | 2026-08-10 | Fuad-Sabseb | Add course routes
+e9d6b4f | 2026-08-10 | Fuad-Sabseb | Update student routes
+1b3be34 | 2026-08-10 | Fuad-Sabseb | Add department model schema
+f5dab71 | 2026-08-10 | Fuad-Sabseb | Add course model schema
+5ef5e31 | 2026-08-10 | Fuad-Sabseb | Update student model schema
+f44a01a | 2026-08-10 | Fuad-Sabseb | Add request validation middleware
+c7e3218 | 2026-08-10 | Fuad-Sabseb | Update 404 not found middleware
+f7a7e99 | 2026-08-10 | Fuad-Sabseb | Update logging middleware
+235c83e | 2026-08-10 | Fuad-Sabseb | Update error handling middleware
+98ff86e | 2026-08-10 | Fuad-Sabseb | Add cousre controler
+4e3c3e7 | 2026-08-10 | Fuad-Sabseb | Add department controller
+bec844a | 2026-08-10 | Fuad-Sabseb | department controller added
+0d82316 | 2026-08-10 | olyad73 | mschema added
+52d96e6 | 2026-08-10 | olyad73 | migration added
+d11d369 | 2026-08-10 | Fuad Sbaseb | Merge pull request #3 from Fuad-Sabseb/frontend
+cd0a734 | 2026-08-10 | Fuad Sbaseb | Merge pull request #2 from Fuad-Sabseb/backend
+656970f | 2026-08-10 | Fuad Sbaseb | Merge pull request #1 from Fuad-Sabseb/database
+3cc51a6 | 2026-08-10 | Fuad-Sabseb | Add frontend application
+ca81b9c | 2026-08-10 | Fuad-Sabseb | Add Jest test config
+2a3d079 | 2026-08-10 | Fuad-Sabseb | Add project documentation
+14c684e | 2026-08-10 | Fuad-Sabseb | Add database schema and migration scripts
+c8bf9e8 | 2026-08-10 | Fuad-Sabseb | Add department validation middleware
+4b6edd8 | 2026-08-07 | Fuad-Sabseb | Add student management API updates and logger middleware
+96229cd | 2026-08-07 | Fuad-Sabseb | Initial commit
