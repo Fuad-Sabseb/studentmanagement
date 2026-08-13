@@ -1,13 +1,4 @@
-/**
- * =====================================================
- * api.js
- * -----------------------------------------------------
- * Centralized fetch() client for the Student Management
- * Express REST API. Automatically attaches the logged-in
- * user's JWT to every request, and clears the session
- * if the server responds 401 (expired/invalid token).
- * =====================================================
- */
+
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api";
@@ -15,9 +6,6 @@ export const API_BASE_URL =
 const TOKEN_KEY = "cohort_auth_token";
 const USER_KEY = "cohort_auth_user";
 
-/**
- * Low-level request helper.
- */
 async function request(path, options = {}) {
   const token = typeof localStorage !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
 
@@ -76,9 +64,6 @@ export const authApi = {
     request("/auth/change-password", { method: "POST", body: JSON.stringify(payload) })
 };
 
-/* ------------------------------------------------------------------ */
-/* Students                                                           */
-/* ------------------------------------------------------------------ */
 
 export const studentsApi = {
   getAll: () => request("/students"),
@@ -103,10 +88,6 @@ export const studentsApi = {
     request(`/students/${studentId}/courses/${courseId}`, { method: "DELETE" })
 };
 
-/* ------------------------------------------------------------------ */
-/* Departments                                                        */
-/* ------------------------------------------------------------------ */
-
 export const departmentsApi = {
   getAll: () => request("/departments"),
   getById: (id) => request(`/departments/${id}`),
@@ -117,9 +98,6 @@ export const departmentsApi = {
   remove: (id) => request(`/departments/${id}`, { method: "DELETE" })
 };
 
-/* ------------------------------------------------------------------ */
-/* Courses                                                             */
-/* ------------------------------------------------------------------ */
 
 export const coursesApi = {
   getAll: () => request("/courses"),
@@ -131,9 +109,6 @@ export const coursesApi = {
   remove: (id) => request(`/courses/${id}`, { method: "DELETE" })
 };
 
-/* ------------------------------------------------------------------ */
-/* Grades                                                              */
-/* ------------------------------------------------------------------ */
 
 export const gradesApi = {
   getMyGrades: () => request("/grades/my-grades"),
@@ -146,10 +121,6 @@ export const gradesApi = {
   remove: (id) => request(`/grades/${id}`, { method: "DELETE" })
 };
 
-/* ------------------------------------------------------------------ */
-/* Announcements / Notice Board                                       */
-/* ------------------------------------------------------------------ */
-
 export const announcementsApi = {
   getAll: () => request("/announcements"),
   getById: (id) => request(`/announcements/${id}`),
@@ -158,9 +129,6 @@ export const announcementsApi = {
   remove: (id) => request(`/announcements/${id}`, { method: "DELETE" })
 };
 
-/* ------------------------------------------------------------------ */
-/* Semesters / Academic Terms                                         */
-/* ------------------------------------------------------------------ */
 
 export const semestersApi = {
   getAll: () => request("/semesters"),
@@ -169,10 +137,6 @@ export const semestersApi = {
   update: (id, payload) => request(`/semesters/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   remove: (id) => request(`/semesters/${id}`, { method: "DELETE" })
 };
-
-/* ------------------------------------------------------------------ */
-/* Class Schedules / Timetables                                       */
-/* ------------------------------------------------------------------ */
 
 export const schedulesApi = {
   getAll: () => request("/schedules"),
