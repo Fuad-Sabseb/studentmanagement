@@ -78,6 +78,12 @@ async function connectDB() {
             await connection.query("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'student', 'teacher') NOT NULL DEFAULT 'student'");
         } catch (_) {}
 
+        // Token version for session invalidation: bumping it (e.g. on password
+        // change) invalidates every previously issued JWT for that user.
+        try {
+            await connection.query("ALTER TABLE users ADD COLUMN token_version INT NOT NULL DEFAULT 0");
+        } catch (_) {}
+
         connection.release();
     } catch (error) {
         console.error("❌ MySQL Database Connection Failed");

@@ -214,10 +214,20 @@ const getEnrolledStudentsForCourse = async (courseId) => {
     return rows;
 };
 
+const isStudentEnrolled = async (studentId, courseId) => {
+    const [rows] = await pool.query(
+        "SELECT id FROM student_courses WHERE student_id = ? AND course_id = ?",
+        [studentId, courseId]
+    );
+    return rows.length > 0;
+};
+
 const batchUpsertGrades = async (courseId, gradeEntries = []) => {
     const results = [];
     for (const entry of gradeEntries) {
         if (!entry.student_id) continue;
+        // Never write a grade for a student who is not enrolled in the course.
+        if (!(await isStudentEnrolled(entry.student_id, courseId))) continue;
         const res = await upsertGrade(entry.student_id, courseId, entry);
         results.push(res);
     }
@@ -244,6 +254,7 @@ module.exports = {
     getGradesByStudent,
     getGradeByStudentAndCourse,
     getEnrolledStudentsForCourse,
+    isStudentEnrolled,
     batchUpsertGrades,
     getGradeById,
     deleteGrade

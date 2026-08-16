@@ -27,8 +27,8 @@ export default function ChangePasswordModal({ open, onClose }) {
       setError("Please fill in all fields");
       return;
     }
-    if (newPassword.length < 6) {
-      setError("New password must be at least 6 characters long");
+    if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      setError("New password must be at least 8 characters and include upper and lower case letters and a number");
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -113,7 +113,7 @@ export default function ChangePasswordModal({ open, onClose }) {
 
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-400">
-                  New Password (min. 6 characters)
+                  New Password (min. 8 chars, upper + lower + number)
                 </label>
                 <input
                   type="password"

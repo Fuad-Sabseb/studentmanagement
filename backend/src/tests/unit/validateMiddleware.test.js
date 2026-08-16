@@ -3,7 +3,7 @@ const {
     validateDepartment,
     validateCourse,
     validateAssignCourse
-} = require("../../src/middleware/validateMiddleware");
+} = require("../../middleware/validateMiddleware");
 
 /**
  * Helper to build fake Express req/res/next objects.

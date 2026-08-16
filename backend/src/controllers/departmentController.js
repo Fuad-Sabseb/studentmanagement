@@ -9,7 +9,7 @@
 
 const departmentModel = require("../models/departmentModel");
 
-exports.createDepartment = async (req, res) => {
+exports.createDepartment = async (req, res, next) => {
     try {
         const result = await departmentModel.createDepartment(req.body);
 
@@ -26,11 +26,11 @@ exports.createDepartment = async (req, res) => {
             });
         }
 
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.getAllDepartments = async (req, res) => {
+exports.getAllDepartments = async (req, res, next) => {
     try {
         const departments = await departmentModel.getAllDepartments();
 
@@ -40,11 +40,11 @@ exports.getAllDepartments = async (req, res) => {
             data: departments
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.getDepartmentById = async (req, res) => {
+exports.getDepartmentById = async (req, res, next) => {
     try {
         const department = await departmentModel.getDepartmentById(req.params.id);
 
@@ -54,11 +54,11 @@ exports.getDepartmentById = async (req, res) => {
 
         res.json({ success: true, data: department });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.updateDepartment = async (req, res) => {
+exports.updateDepartment = async (req, res, next) => {
     try {
         const department = await departmentModel.getDepartmentById(req.params.id);
         if (!department) {
@@ -69,11 +69,11 @@ exports.updateDepartment = async (req, res) => {
 
         res.json({ success: true, message: "Department updated successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.deleteDepartment = async (req, res) => {
+exports.deleteDepartment = async (req, res, next) => {
     try {
         const department = await departmentModel.getDepartmentById(req.params.id);
         if (!department) {
@@ -84,6 +84,6 @@ exports.deleteDepartment = async (req, res) => {
 
         res.json({ success: true, message: "Department deleted successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };

@@ -1,14 +1,14 @@
 // Mock the DB pool BEFORE requiring the model so no real MySQL connection
 // is ever attempted during unit tests.
-jest.mock("../../src/config/db", () => ({
+jest.mock("../../config/db", () => ({
     pool: {
         execute: jest.fn(),
         query: jest.fn()
     }
 }));
 
-const { pool } = require("../../src/config/db");
-const studentModel = require("../../src/models/studentModel");
+const { pool } = require("../../config/db");
+const studentModel = require("../../models/studentModel");
 
 beforeEach(() => {
     jest.clearAllMocks();

@@ -7,13 +7,14 @@ const express = require("express");
 const router = express.Router();
 const announcementController = require("../controllers/announcementController");
 const { requireRole } = require("../middleware/rbacMiddleware");
+const { validateAnnouncement } = require("../middleware/validateMiddleware");
 
 // All authenticated users can read announcements
 router.get("/", announcementController.getAllAnnouncements);
 router.get("/:id", announcementController.getAnnouncementById);
 
 // Admin-only creation and modification
-router.post("/", requireRole("admin"), announcementController.createAnnouncement);
+router.post("/", requireRole("admin"), validateAnnouncement, announcementController.createAnnouncement);
 router.put("/:id", requireRole("admin"), announcementController.updateAnnouncement);
 router.delete("/:id", requireRole("admin"), announcementController.deleteAnnouncement);
 

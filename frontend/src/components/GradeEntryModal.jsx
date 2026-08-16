@@ -96,7 +96,6 @@ export default function GradeEntryModal({
       return;
     }
 
-    // Otherwise fetch from API to ensure persisted values are loaded
     setFetchingMarks(true);
     try {
       const res = await gradesApi.getByStudentAndCourse(stud.id, cId);

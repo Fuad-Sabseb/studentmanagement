@@ -2,7 +2,6 @@ import { Github, Mail, ShieldCheck, Twitter, Linkedin,GraduationCap, Instagram }
 import logo from "../images/logo.png";
 
 
-// Update these URLs to your real profiles.
 const SOCIAL_LINKS = [
   { id: "github", label: "GitHub", icon: Github, href: "https://github.com/your-username" },
   { id: "twitter", label: "Twitter / X", icon: Twitter, href: "https://twitter.com/your-handle" },

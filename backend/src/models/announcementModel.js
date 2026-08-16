@@ -34,8 +34,17 @@ const getAllAnnouncements = async (audience = null) => {
     return rows;
 };
 
-const getAnnouncementById = async (id) => {
-    const [rows] = await pool.query("SELECT * FROM announcements WHERE id = ?", [id]);
+const getAnnouncementById = async (id, audience = null) => {
+    let sql = "SELECT * FROM announcements WHERE id = ?";
+    const params = [id];
+
+    // Non-admin callers must not read announcements aimed exclusively at admins.
+    if (audience && audience !== "all") {
+        sql += " AND (audience = 'all' OR audience = ?)";
+        params.push(audience);
+    }
+
+    const [rows] = await pool.query(sql, params);
     return rows[0];
 };
 

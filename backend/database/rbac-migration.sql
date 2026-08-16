@@ -1,11 +1,6 @@
--- =====================================================================
--- RBAC Migration: users table (role-based auth) + grades table
--- Run:  mysql -u root -p student_management < backend/database/rbac-migration.sql
--- =====================================================================
 USE student_management;
 
 -- ---------------------------------------------------------------------
--- 1. USERS TABLE (single source of truth for authentication)
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     id              INT AUTO_INCREMENT PRIMARY KEY,
@@ -25,10 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_student_id ON users(student_id);
 
--- ---------------------------------------------------------------------
--- 2. Migrate any existing student credentials (students.username/password_hash)
---    into the new users table, if those columns exist.
--- ---------------------------------------------------------------------
+
 INSERT INTO users (username, password_hash, role, student_id)
 SELECT s.username, s.password_hash, 'student', s.id
 FROM students s

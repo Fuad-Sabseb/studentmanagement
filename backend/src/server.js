@@ -7,7 +7,15 @@
  * =====================================================
  */
 
-require("dotenv").config();
+const path = require("path");
+const dotenv = require("dotenv");
+
+// Always load .env from the backend folder, no matter which directory the
+// server is started from (e.g. `node src/server.js` run from the repo root).
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
+
+const { validateSecurityConfig } = require("./config/securityConfig");
+validateSecurityConfig();
 
 const app = require("./app");
 const { connectDB } = require("./config/db");

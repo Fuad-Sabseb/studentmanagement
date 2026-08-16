@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Lock, User } from "lucide-react";
+import { Loader2, Lock, User, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import logo from "../images/logo.png";
 
-export default function LoginPage({ onLogin }) {
+export default function SignupPage({ onSignup }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -14,16 +15,31 @@ export default function LoginPage({ onLogin }) {
     e.preventDefault();
     setError("");
 
-    if (!username.trim() || !password) {
-      setError("Enter both your username and password.");
+    if (!username.trim() || !password || !confirmPassword) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      setError("Password must include uppercase, lowercase, and a number.");
       return;
     }
 
     setSubmitting(true);
     try {
-      await onLogin(username.trim(), password);
+      await onSignup(username.trim(), password, confirmPassword);
     } catch (err) {
-      setError(err.message || "Login failed. Please try again.");
+      setError(err.message || "Signup failed. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -41,8 +57,8 @@ export default function LoginPage({ onLogin }) {
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 shadow-glow overflow-hidden">
             <img src={logo} alt="Student Management Logo" className="h-full w-full object-cover" />
           </div>
-          <h1 className="font-display text-lg font-semibold text-white">Student Management</h1>
-          <p className="mt-1 text-sm text-slate-400">Sign in with your student account</p>
+          <h1 className="font-display text-lg font-semibold text-white">Create Account</h1>
+          <p className="mt-1 text-sm text-slate-400">Sign up for a student account</p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -57,7 +73,7 @@ export default function LoginPage({ onLogin }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="input-field pl-9"
-                placeholder="e.g. fuad.sabseb"
+                placeholder="e.g. john.doe"
                 autoFocus
                 autoComplete="username"
               />
@@ -76,8 +92,29 @@ export default function LoginPage({ onLogin }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="input-field pl-9"
-                placeholder="********"
-                autoComplete="current-password"
+                placeholder="Min 8 characters"
+                autoComplete="new-password"
+              />
+            </div>
+            <p className="mt-1 text-xs text-slate-500">
+              Must include uppercase, lowercase, and a number
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="mb-1.5 block text-xs font-medium text-slate-400">
+              Confirm Password
+            </label>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="input-field pl-9"
+                placeholder="Re-enter password"
+                autoComplete="new-password"
               />
             </div>
           </div>
@@ -90,14 +127,14 @@ export default function LoginPage({ onLogin }) {
 
           <button type="submit" disabled={submitting} className="btn-primary w-full">
             {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            Sign In
+            Create Account
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-slate-600">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-brand-400 hover:text-brand-300">
-            Sign up
+        <p className="mt-6 text-center text-xs text-slate-400">
+          Already have an account?{" "}
+          <Link to="/login" className="text-brand-400 hover:text-brand-300">
+            Sign in
           </Link>
         </p>
       </motion.div>

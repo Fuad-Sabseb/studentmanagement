@@ -9,7 +9,7 @@
 
 const courseModel = require("../models/courseModel");
 
-exports.createCourse = async (req, res) => {
+exports.createCourse = async (req, res, next) => {
     try {
         const result = await courseModel.createCourse(req.body);
 
@@ -26,11 +26,11 @@ exports.createCourse = async (req, res) => {
             });
         }
 
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.getAllCourses = async (req, res) => {
+exports.getAllCourses = async (req, res, next) => {
     try {
         const courses = await courseModel.getAllCourses();
 
@@ -40,11 +40,11 @@ exports.getAllCourses = async (req, res) => {
             data: courses
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.getCourseById = async (req, res) => {
+exports.getCourseById = async (req, res, next) => {
     try {
         const course = await courseModel.getCourseById(req.params.id);
 
@@ -54,11 +54,11 @@ exports.getCourseById = async (req, res) => {
 
         res.json({ success: true, data: course });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.updateCourse = async (req, res) => {
+exports.updateCourse = async (req, res, next) => {
     try {
         const course = await courseModel.getCourseById(req.params.id);
         if (!course) {
@@ -69,11 +69,11 @@ exports.updateCourse = async (req, res) => {
 
         res.json({ success: true, message: "Course updated successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.deleteCourse = async (req, res) => {
+exports.deleteCourse = async (req, res, next) => {
     try {
         const course = await courseModel.getCourseById(req.params.id);
         if (!course) {
@@ -84,6 +84,6 @@ exports.deleteCourse = async (req, res) => {
 
         res.json({ success: true, message: "Course deleted successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
