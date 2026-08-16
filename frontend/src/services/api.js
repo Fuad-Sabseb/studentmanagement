@@ -1,21 +1,33 @@
 
 
+
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api";
 
-const TOKEN_KEY = "cohort_auth_token";
 const USER_KEY = "cohort_auth_user";
 
-async function request(path, options = {}) {
-  const token = typeof localStorage !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
+const clearLocalSession = () => {
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem(USER_KEY);
+  }
+};
 
+const endServerSession = async () => {
+  try {
+    await fetch(`${API_BASE_URL}/auth/logout`, { method: "POST", credentials: "include" });
+  } catch {
+    // The server session cookie is cleared best-effort; local session still ends.
+  }
+};
+
+async function request(path, options = {}) {
   let response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        "Content-Type": "application/json"
       },
+      credentials: "include",
       ...options
     });
   } catch (networkError) {
@@ -32,10 +44,7 @@ async function request(path, options = {}) {
   }
 
   if (response.status === 401) {
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-    }
+    clearLocalSession();
     if (typeof window !== "undefined" && window.location) {
       window.location.reload();
     }
@@ -60,8 +69,22 @@ export const authApi = {
   login: (credentials) =>
     request("/auth/login", { method: "POST", body: JSON.stringify(credentials) }),
   me: () => request("/auth/me"),
-  changePassword: (payload) =>
-    request("/auth/change-password", { method: "POST", body: JSON.stringify(payload) })
+  changePassword: async (payload) => {
+    const result = await request("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    // The server bumps token_version and clears the session cookie on success,
+    // so force the user back through the login flow.
+    await endServerSession();
+    clearLocalSession();
+    if (typeof window !== "undefined") window.location.assign("/login");
+    return result;
+  },
+  logout: async () => {
+    await endServerSession();
+    clearLocalSession();
+  }
 };
 
 

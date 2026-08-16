@@ -1,9 +1,14 @@
-jest.mock("../../src/models/studentModel");
-jest.mock("../../src/models/courseModel");
+jest.mock("../../models/studentModel");
+jest.mock("../../models/courseModel");
+jest.mock("../../config/db", () => ({
+    pool: { execute: jest.fn(), query: jest.fn() },
+    connectDB: jest.fn()
+}));
 
-const studentModel = require("../../src/models/studentModel");
-const courseModel = require("../../src/models/courseModel");
-const studentController = require("../../src/controllers/studentController");
+const studentModel = require("../../models/studentModel");
+const courseModel = require("../../models/courseModel");
+const { pool } = require("../../config/db");
+const studentController = require("../../controllers/studentController");
 
 function mockRes() {
     return {
@@ -27,11 +32,14 @@ beforeEach(() => {
 describe("studentController.createStudent", () => {
     test("returns 201 and the new id on success", async () => {
         studentModel.createStudent.mockResolvedValue({ insertId: 10 });
+        pool.query.mockResolvedValue([[]]); // no username clash
+        pool.execute.mockResolvedValue([{ insertId: 1 }]); // insert users row
 
         const req = { body: { name: "Fuad", email: "fuad@test.com" } };
         const res = mockRes();
+        const next = jest.fn();
 
-        await studentController.createStudent(req, res);
+        await studentController.createStudent(req, res, next);
 
         expect(res.statusCode).toBe(201);
         expect(res.body.success).toBe(true);
@@ -52,15 +60,16 @@ describe("studentController.createStudent", () => {
         expect(res.body.success).toBe(false);
     });
 
-    test("returns 500 on unexpected error", async () => {
+    test("forwards unexpected errors to the error handler instead of leaking details", async () => {
         studentModel.createStudent.mockRejectedValue(new Error("DB down"));
 
         const req = { body: { name: "Fuad", email: "fuad@test.com" } };
         const res = mockRes();
+        const next = jest.fn();
 
-        await studentController.createStudent(req, res);
+        await studentController.createStudent(req, res, next);
 
-        expect(res.statusCode).toBe(500);
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
     });
 });
 

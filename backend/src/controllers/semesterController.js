@@ -5,16 +5,16 @@
  */
 const semesterModel = require("../models/semesterModel");
 
-exports.getAllSemesters = async (req, res) => {
+exports.getAllSemesters = async (req, res, next) => {
     try {
         const semesters = await semesterModel.getAllSemesters();
         res.json({ success: true, count: semesters.length, data: semesters });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.getSemesterById = async (req, res) => {
+exports.getSemesterById = async (req, res, next) => {
     try {
         const semester = await semesterModel.getSemesterById(req.params.id);
         if (!semester) {
@@ -22,11 +22,11 @@ exports.getSemesterById = async (req, res) => {
         }
         res.json({ success: true, data: semester });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.createSemester = async (req, res) => {
+exports.createSemester = async (req, res, next) => {
     try {
         const { name, academic_year, is_current } = req.body || {};
         if (!name || !name.trim()) {
@@ -43,11 +43,11 @@ exports.createSemester = async (req, res) => {
             id: result.insertId
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.updateSemester = async (req, res) => {
+exports.updateSemester = async (req, res, next) => {
     try {
         const exists = await semesterModel.getSemesterById(req.params.id);
         if (!exists) {
@@ -56,11 +56,11 @@ exports.updateSemester = async (req, res) => {
         await semesterModel.updateSemester(req.params.id, req.body || {});
         res.json({ success: true, message: "Semester updated successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.deleteSemester = async (req, res) => {
+exports.deleteSemester = async (req, res, next) => {
     try {
         const exists = await semesterModel.getSemesterById(req.params.id);
         if (!exists) {
@@ -69,6 +69,6 @@ exports.deleteSemester = async (req, res) => {
         await semesterModel.deleteSemester(req.params.id);
         res.json({ success: true, message: "Semester deleted successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };

@@ -5,16 +5,16 @@
  */
 const scheduleModel = require("../models/scheduleModel");
 
-exports.getAllSchedules = async (req, res) => {
+exports.getAllSchedules = async (req, res, next) => {
     try {
         const schedules = await scheduleModel.getAllSchedules();
         res.json({ success: true, count: schedules.length, data: schedules });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.getMySchedule = async (req, res) => {
+exports.getMySchedule = async (req, res, next) => {
     try {
         const studentId = req.user.studentId || req.user.student_id;
         if (!studentId) {
@@ -23,11 +23,11 @@ exports.getMySchedule = async (req, res) => {
         const schedules = await scheduleModel.getSchedulesForStudent(studentId);
         res.json({ success: true, count: schedules.length, data: schedules });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.getScheduleById = async (req, res) => {
+exports.getScheduleById = async (req, res, next) => {
     try {
         const schedule = await scheduleModel.getScheduleById(req.params.id);
         if (!schedule) {
@@ -35,11 +35,11 @@ exports.getScheduleById = async (req, res) => {
         }
         res.json({ success: true, data: schedule });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.createSchedule = async (req, res) => {
+exports.createSchedule = async (req, res, next) => {
     try {
         const { course_id, day_of_week, start_time, end_time, room, instructor_name } = req.body || {};
         if (!course_id || !day_of_week || !start_time || !end_time || !room) {
@@ -62,11 +62,11 @@ exports.createSchedule = async (req, res) => {
             id: result.insertId
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.updateSchedule = async (req, res) => {
+exports.updateSchedule = async (req, res, next) => {
     try {
         const exists = await scheduleModel.getScheduleById(req.params.id);
         if (!exists) {
@@ -75,11 +75,11 @@ exports.updateSchedule = async (req, res) => {
         await scheduleModel.updateSchedule(req.params.id, req.body || {});
         res.json({ success: true, message: "Schedule updated successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-exports.deleteSchedule = async (req, res) => {
+exports.deleteSchedule = async (req, res, next) => {
     try {
         const exists = await scheduleModel.getScheduleById(req.params.id);
         if (!exists) {
@@ -88,6 +88,6 @@ exports.deleteSchedule = async (req, res) => {
         await scheduleModel.deleteSchedule(req.params.id);
         res.json({ success: true, message: "Schedule deleted successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };

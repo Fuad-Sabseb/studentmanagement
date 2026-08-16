@@ -14,7 +14,7 @@ const courseModel = require("../models/courseModel");
  * POST /api/grades  (admin)
  * Body: { student_id, course_id, mid_exam, quiz, assignment, final_exam }
  */
-exports.enterGrade = async (req, res) => {
+exports.enterGrade = async (req, res, next) => {
     try {
         const { student_id, course_id, mid_exam, quiz, assignment, final_exam } = req.body || {};
 
@@ -32,20 +32,24 @@ exports.enterGrade = async (req, res) => {
             return res.status(404).json({ success: false, message: "Course not found" });
         }
 
+        if (!(await gradeModel.isStudentEnrolled(student_id, course_id))) {
+            return res.status(400).json({ success: false, message: "Student is not enrolled in this course" });
+        }
+
         const grade = await gradeModel.upsertGrade(student_id, course_id, {
             mid_exam, quiz, assignment, final_exam
         });
 
         res.status(201).json({ success: true, message: "Grade saved successfully", data: grade });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
 /**
  * PUT /api/grades/:id  (admin)
  */
-exports.updateGrade = async (req, res) => {
+exports.updateGrade = async (req, res, next) => {
     try {
         const updated = await gradeModel.updateGradeById(req.params.id, req.body || {});
         if (!updated) {
@@ -53,26 +57,26 @@ exports.updateGrade = async (req, res) => {
         }
         res.json({ success: true, message: "Grade updated successfully", data: updated });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
 /**
  * DELETE /api/grades/:id  (admin)
  */
-exports.deleteGrade = async (req, res) => {
+exports.deleteGrade = async (req, res, next) => {
     try {
         await gradeModel.deleteGrade(req.params.id);
         res.json({ success: true, message: "Grade record deleted" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
 /**
  * GET /api/grades/student/:studentId  (admin, or the owning student)
  */
-exports.getGradesForStudent = async (req, res) => {
+exports.getGradesForStudent = async (req, res, next) => {
     try {
         const studentExists = await studentModel.studentExists(req.params.studentId);
         if (!studentExists) {
@@ -81,20 +85,20 @@ exports.getGradesForStudent = async (req, res) => {
         const grades = await gradeModel.getGradesByStudent(req.params.studentId);
         res.json({ success: true, count: grades.length, data: grades });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
 /**
  * GET /api/grades/student/:studentId/course/:courseId (admin or owning student)
  */
-exports.getGradeByStudentAndCourse = async (req, res) => {
+exports.getGradeByStudentAndCourse = async (req, res, next) => {
     try {
         const { studentId, courseId } = req.params;
         const grade = await gradeModel.getGradeByStudentAndCourse(studentId, courseId);
         res.json({ success: true, data: grade });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
@@ -102,7 +106,7 @@ exports.getGradeByStudentAndCourse = async (req, res) => {
  * GET /api/grades/course/:courseId (admin)
  * List all enrolled students for a course along with their existing marks
  */
-exports.getCourseStudentsAndGrades = async (req, res) => {
+exports.getCourseStudentsAndGrades = async (req, res, next) => {
     try {
         const { courseId } = req.params;
         const course = await courseModel.getCourseById(courseId);
@@ -118,7 +122,7 @@ exports.getCourseStudentsAndGrades = async (req, res) => {
             data: enrolled
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
@@ -126,7 +130,7 @@ exports.getCourseStudentsAndGrades = async (req, res) => {
  * POST /api/grades/batch (admin)
  * Body: { course_id, grades: [ { student_id, mid_exam, quiz, assignment, final_exam }, ... ] }
  */
-exports.batchEnterGrades = async (req, res) => {
+exports.batchEnterGrades = async (req, res, next) => {
     try {
         const { course_id, grades } = req.body || {};
         if (!course_id || !Array.isArray(grades)) {
@@ -145,14 +149,14 @@ exports.batchEnterGrades = async (req, res) => {
             data: updated
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
 /**
  * GET /api/grades/my-grades  (student — self-service, no :id param so no IDOR surface)
  */
-exports.getMyGrades = async (req, res) => {
+exports.getMyGrades = async (req, res, next) => {
     try {
         const studentId = req.user.studentId || req.user.student_id;
         if (req.user.role !== "student" || !studentId) {
@@ -161,6 +165,6 @@ exports.getMyGrades = async (req, res) => {
         const grades = await gradeModel.getGradesByStudent(studentId);
         res.json({ success: true, count: grades.length, data: grades });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };

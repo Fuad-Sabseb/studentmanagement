@@ -17,6 +17,9 @@ const requireRole = (...allowedRoles) => (req, res, next) => {
         return res.status(401).json({ success: false, message: "Not authenticated" });
     }
     if (!allowedRoles.includes(req.user.role)) {
+        console.warn(
+            `SECURITY AUDIT: RBAC denial — ${req.method} ${req.originalUrl} by role '${req.user.role}'`
+        );
         return res.status(403).json({
             success: false,
             message: "You do not have permission to perform this action"
@@ -36,6 +39,9 @@ const verifyStudentOwnership = (paramName = "id") => (req, res, next) => {
     const targetId = req.params[paramName];
 
     if (req.user.role !== "student" || String(req.user.studentId) !== String(targetId)) {
+        console.warn(
+            `SECURITY AUDIT: ownership denial — ${req.method} ${req.originalUrl} by role '${req.user.role}' targeting id '${targetId}'`
+        );
         return res.status(403).json({
             success: false,
             message: "You can only access your own records"

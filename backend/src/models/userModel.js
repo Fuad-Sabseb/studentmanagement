@@ -30,4 +30,17 @@ const findById = async (id) => {
     return rows[0];
 };
 
-module.exports = { findByUsername, findById };
+const usernameExists = async (username) => {
+    const [rows] = await pool.query("SELECT id FROM users WHERE username = ?", [username]);
+    return rows.length > 0;
+};
+
+const createUser = async (username, passwordHash, role = "student") => {
+    const [result] = await pool.execute(
+        "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+        [username, passwordHash, role]
+    );
+    return result;
+};
+
+module.exports = { findByUsername, findById, usernameExists, createUser };

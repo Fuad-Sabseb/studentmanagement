@@ -16,7 +16,7 @@ const { pool } = require("../config/db");
  * CREATE STUDENT
  * POST /api/students
  */
-exports.createStudent = async (req, res) => {
+exports.createStudent = async (req, res, next) => {
     try {
         const student = req.body;
         const result = await studentModel.createStudent(student);
@@ -57,10 +57,7 @@ exports.createStudent = async (req, res) => {
             });
         }
 
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -68,7 +65,7 @@ exports.createStudent = async (req, res) => {
  * GET ALL ACTIVE STUDENTS
  * GET /api/students
  */
-exports.getAllStudents = async (req, res) => {
+exports.getAllStudents = async (req, res, next) => {
     try {
         const students = await studentModel.getAllStudents();
 
@@ -78,10 +75,7 @@ exports.getAllStudents = async (req, res) => {
             data: students
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -89,7 +83,7 @@ exports.getAllStudents = async (req, res) => {
  * GET LOGGED-IN STUDENT PROFILE
  * GET /api/students/me
  */
-exports.getMyProfile = async (req, res) => {
+exports.getMyProfile = async (req, res, next) => {
     try {
         const studentId = req.user.studentId || req.user.student_id;
         if (!studentId) {
@@ -112,10 +106,7 @@ exports.getMyProfile = async (req, res) => {
             data: student
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -123,7 +114,7 @@ exports.getMyProfile = async (req, res) => {
  * UPDATE LOGGED-IN STUDENT PROFILE (SELF-SERVICE)
  * PUT /api/students/me
  */
-exports.updateMyProfile = async (req, res) => {
+exports.updateMyProfile = async (req, res, next) => {
     try {
         const studentId = req.user.studentId || req.user.student_id;
         if (!studentId) {
@@ -146,10 +137,7 @@ exports.updateMyProfile = async (req, res) => {
             data: updated
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -157,7 +145,7 @@ exports.updateMyProfile = async (req, res) => {
  * GET STUDENT BY ID
  * GET /api/students/:id
  */
-exports.getStudentById = async (req, res) => {
+exports.getStudentById = async (req, res, next) => {
     try {
         const student = await studentModel.getStudentById(req.params.id);
 
@@ -173,10 +161,7 @@ exports.getStudentById = async (req, res) => {
             data: student
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -184,7 +169,7 @@ exports.getStudentById = async (req, res) => {
  * GET STUDENTS BY DEPARTMENT
  * GET /api/students/department/:dept
  */
-exports.getStudentsByDepartment = async (req, res) => {
+exports.getStudentsByDepartment = async (req, res, next) => {
     try {
         const students = await studentModel.getStudentsByDepartment(req.params.dept);
 
@@ -194,10 +179,7 @@ exports.getStudentsByDepartment = async (req, res) => {
             data: students
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -205,7 +187,7 @@ exports.getStudentsByDepartment = async (req, res) => {
  * GET COUNT OF ACTIVE STUDENTS
  * GET /api/students/count
  */
-exports.getStudentCount = async (req, res) => {
+exports.getStudentCount = async (req, res, next) => {
     try {
         const total = await studentModel.countActiveStudents();
 
@@ -214,10 +196,7 @@ exports.getStudentCount = async (req, res) => {
             data: { total }
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -225,7 +204,7 @@ exports.getStudentCount = async (req, res) => {
  * UPDATE STUDENT
  * PUT /api/students/:id
  */
-exports.updateStudent = async (req, res) => {
+exports.updateStudent = async (req, res, next) => {
     try {
         const exists = await studentModel.studentExists(req.params.id);
         if (!exists) {
@@ -249,10 +228,7 @@ exports.updateStudent = async (req, res) => {
             });
         }
 
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -260,7 +236,7 @@ exports.updateStudent = async (req, res) => {
  * SOFT DELETE STUDENT
  * DELETE /api/students/:id
  */
-exports.deleteStudent = async (req, res) => {
+exports.deleteStudent = async (req, res, next) => {
     try {
         const exists = await studentModel.studentExists(req.params.id);
         if (!exists) {
@@ -277,10 +253,7 @@ exports.deleteStudent = async (req, res) => {
             message: "Student deleted successfully"
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -289,7 +262,7 @@ exports.deleteStudent = async (req, res) => {
  * POST /api/students/:id/courses
  * Body: { course_id }
  */
-exports.assignCourse = async (req, res) => {
+exports.assignCourse = async (req, res, next) => {
     try {
         const studentId = req.params.id;
         const { course_id } = req.body;
@@ -317,10 +290,7 @@ exports.assignCourse = async (req, res) => {
             message: "Course assigned to student successfully"
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };
 
@@ -328,7 +298,7 @@ exports.assignCourse = async (req, res) => {
  * REMOVE COURSE FROM STUDENT
  * DELETE /api/students/:id/courses/:courseId
  */
-exports.removeCourse = async (req, res) => {
+exports.removeCourse = async (req, res, next) => {
     try {
         await studentModel.removeCourse(req.params.id, req.params.courseId);
 
@@ -337,9 +307,6 @@ exports.removeCourse = async (req, res) => {
             message: "Course removed from student successfully"
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
     }
 };

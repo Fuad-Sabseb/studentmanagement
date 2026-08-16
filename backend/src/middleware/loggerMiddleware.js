@@ -27,11 +27,13 @@ const logger = (req, res, next) => {
     res.on("finish", () => {
         const duration = Date.now() - start;
 
-        const statusColorSafe = res.statusCode;
-
-        console.log(
-            `<-- ${req.method} ${req.originalUrl} ${statusColorSafe} (${duration}ms)`
-        );
+        // 4xx/5xx responses are logged as warnings so security events
+        // (failed auth, RBAC denials, throttling) stand out in the console.
+        if (res.statusCode >= 400) {
+            console.warn(`<-- ${req.method} ${req.originalUrl} ${res.statusCode} (${duration}ms)`);
+        } else {
+            console.log(`<-- ${req.method} ${req.originalUrl} ${res.statusCode} (${duration}ms)`);
+        }
     });
 
     next();
