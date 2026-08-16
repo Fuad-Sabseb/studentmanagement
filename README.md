@@ -1,4 +1,4 @@
-# 🎓 Cohort University Student Management System (SIS)
+# 🎓 Student Management System
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-v4.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
@@ -300,7 +300,7 @@ studentmanagement/
 
 * Fuad Sabseb
 * GitHub: [@Fuad-Sabseb](https://github.com/Fuad-Sabseb)
-* Project: Cohort University Student Management System (SIS)
+* Project: Student Management System
 
 ---
 

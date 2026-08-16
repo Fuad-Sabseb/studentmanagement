@@ -1,5 +1,4 @@
-// Mock the DB pool BEFORE requiring the model so no real MySQL connection
-// is ever attempted during unit tests.
+// Mock the DB pool before requiring the model so no real MySQL connection is used.
 jest.mock("../../src/config/db", () => ({
     pool: {
         execute: jest.fn(),
@@ -10,11 +9,13 @@ jest.mock("../../src/config/db", () => ({
 const { pool } = require("../../src/config/db");
 const studentModel = require("../../src/models/studentModel");
 
+// Clear mock calls before each test.
 beforeEach(() => {
     jest.clearAllMocks();
 });
 
 describe("studentModel.createStudent", () => {
+    // Test that student data is inserted with the correct values.
     test("inserts a student with the correct SQL values", async () => {
         pool.execute.mockResolvedValue([{ insertId: 42 }]);
 
@@ -32,6 +33,7 @@ describe("studentModel.createStudent", () => {
         expect(result.insertId).toBe(42);
     });
 
+    // Test that optional values default to null when not provided.
     test("defaults phone and department_id to null when omitted", async () => {
         pool.execute.mockResolvedValue([{ insertId: 1 }]);
 
@@ -45,6 +47,7 @@ describe("studentModel.createStudent", () => {
 });
 
 describe("studentModel.getAllStudents", () => {
+    // Test that only students who have not been deleted are retrieved.
     test("only queries active (non-deleted) students", async () => {
         pool.query.mockResolvedValue([[{ id: 1, name: "A" }]]);
 
@@ -58,6 +61,7 @@ describe("studentModel.getAllStudents", () => {
 });
 
 describe("studentModel.getStudentsByDepartment", () => {
+    // Test filtering students using a department ID.
     test("filters by department_id when a numeric id is passed", async () => {
         pool.query.mockResolvedValue([[]]);
 
@@ -69,6 +73,7 @@ describe("studentModel.getStudentsByDepartment", () => {
         );
     });
 
+    // Test filtering students using a department name.
     test("filters by department name when a non-numeric value is passed", async () => {
         pool.query.mockResolvedValue([[]]);
 
@@ -82,6 +87,7 @@ describe("studentModel.getStudentsByDepartment", () => {
 });
 
 describe("studentModel.deleteStudent (soft delete)", () => {
+    // Test that deletion changes the flag instead of removing the record.
     test("sets is_deleted = TRUE instead of removing the row", async () => {
         pool.execute.mockResolvedValue([{ affectedRows: 1 }]);
 
@@ -95,6 +101,7 @@ describe("studentModel.deleteStudent (soft delete)", () => {
 });
 
 describe("studentModel.countActiveStudents", () => {
+    // Test that the model returns the number of active students.
     test("returns the total from the query result", async () => {
         pool.query.mockResolvedValue([[{ total: 7 }]]);
 
@@ -108,6 +115,7 @@ describe("studentModel.countActiveStudents", () => {
 });
 
 describe("studentModel.assignCourse", () => {
+    // Test that a course is assigned to a student correctly.
     test("inserts into student_courses using INSERT IGNORE", async () => {
         pool.execute.mockResolvedValue([{ affectedRows: 1 }]);
 

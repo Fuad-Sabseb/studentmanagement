@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import StudentTable from "../components/StudentTable.jsx";
 
 describe("StudentTable component", () => {
+  // Test that a student's name and email are displayed
   it("renders student row with name and email", () => {
     const students = [
       {
