@@ -7,8 +7,8 @@ require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const { pool } = require("../src/config/db");
 
-const USERNAME = process.env.ADMIN_USERNAME || "admin";
-const PASSWORD = process.env.ADMIN_PASSWORD || "Admin@12345";
+const USERNAME = process.env.ADMIN_USERNAME || "hundesa";
+const PASSWORD = process.env.ADMIN_PASSWORD || "hero0";
 
 async function run() {
     const hash = await bcrypt.hash(PASSWORD, 10);
