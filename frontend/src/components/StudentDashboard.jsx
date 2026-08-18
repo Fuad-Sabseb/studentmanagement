@@ -170,7 +170,7 @@ export default function StudentDashboard({ currentUser, onLogout }) {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 shadow-glow overflow-hidden">
-              <img src={logo} alt="Cohort Logo" className="h-full w-full object-cover" />
+              <img src={logo} alt="Student Logo" className="h-full w-full object-cover" />
             </div>
             <div>
               <h1 className="font-display text-base sm:text-lg font-semibold text-white">

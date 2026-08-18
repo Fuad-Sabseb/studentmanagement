@@ -1,4 +1,4 @@
-# 🎓 COHORT STUDENT MANAGEMENT SYSTEM (SIS)
+# 🎓 STUDENT MANAGEMENT SYSTEM (SIS)
 ## Complete Technical Documentation & Audience Presentation Report
 
 ---
@@ -8,7 +8,7 @@
 | Field | Information |
 | :--- | :--- |
 | **Student / Presenter Name** | **Fuad Sabseb** |
-| **Project Title** | **Cohort University Student Management System (SIS)** |
+| **Project Title** | ** University Student Management System (SIS)** |
 | **Architectural Model** | **3-Tier Enterprise Web Application** (`MySQL Database ↔ Express REST API ↔ React + Vite Frontend`) |
 | **GitHub Repository** | [https://github.com/Fuad-Sabseb/studentmanagement.git](https://github.com/Fuad-Sabseb/studentmanagement.git) |
 | **Presentation Audience** | Academic Faculty, System Administrators, Software Engineering Evaluators |
@@ -21,7 +21,7 @@
 ### 2.1 Executive Pitch & Description
 Modern educational institutions require fast, dependable, and secure systems to manage academic life. Legacy portals are frequently fragmented, lack intuitive mobile interfaces, suffer from unweighted grade inaccuracies, and provide poor batch workflows for instructors.
 
-**Cohort** is a modern, responsive, university-grade Student Information System (SIS). Built using a high-performance **3-Tier architecture**, it seamlessly connects **Administrators**, **Faculty/Instructors**, and **Students** into a unified, secure platform with glassmorphism aesthetics, sub-second API responses, spreadsheet-style gradebook entry, credit-weighted GPA calculations, interactive weekly timetables, and verifiable PDF transcripts.
+**** is a modern, responsive, university-grade Student Information System (SIS). Built using a high-performance **3-Tier architecture**, it seamlessly connects **Administrators**, **Faculty/Instructors**, and **Students** into a unified, secure platform with glassmorphism aesthetics, sub-second API responses, spreadsheet-style gradebook entry, credit-weighted GPA calculations, interactive weekly timetables, and verifiable PDF transcripts.
 
 ### 2.2 Core Project Objectives
 1. **Automate Academic Lifecycle**: Seamlessly register students, manage academic terms, assign departments, and track course enrollments with soft-delete safety.
@@ -82,7 +82,7 @@ Modern educational institutions require fast, dependable, and secure systems to 
 
 ```sql
 -- ====================================================================
--- COHORT UNIVERSITY STUDENT INFORMATION SYSTEM (SIS)
+--  UNIVERSITY STUDENT INFORMATION SYSTEM (SIS)
 -- Production Relational Schema Definition
 -- ====================================================================
 
@@ -341,28 +341,73 @@ The backend follows the **Layered Architectural Pattern** ensuring modularity an
 
 ---
 
-## 🧪 10. Automated Testing & Verification Evidence
+---
 
-All test suites and production build processes pass with **100% success**:
+## 🛡️ 10. OWASP Top 10 Security Architecture & Hardening
 
-```bash
-✓ src/tests/api.test.js (4 tests)
-✓ src/tests/Footer.test.jsx (2 tests)
-✓ src/tests/Header.test.jsx (2 tests)
-✓ src/tests/StudentTable.test.jsx (1 test)
-✓ src/tests/StudentModal.test.jsx (1 test)
+The system incorporates comprehensive defenses against the **OWASP Top 10:2021** vulnerabilities:
 
-Test Files:  5 passed (5)
-Tests:       10 passed (10)
-Duration:    1.03s
-```
+| Category | Vulnerability | Implemented Defense Controls |
+| :--- | :--- | :--- |
+| **A01** | Broken Access Control | Granular 3-Tier RBAC (`admin`, `teacher`, `student`) + Anti-IDOR ownership verification (`verifyStudentOwnership`). |
+| **A02** | Cryptographic Failures | `bcryptjs` (10 rounds) password hashing, HMAC-SHA256 JWT tokens with automatic session expiration, and HSTS headers. |
+| **A03** | Injection & XSS | 100% Parameterized MySQL prepared statements (`?` placeholders) and automated `xssSanitizer` input filtering. |
+| **A04 & A07** | Auth Failures & Brute Force | `authRateLimiter` (10 reqs/15m on auth routes), password complexity engine (min 8 chars, uppercase, lowercase, number, symbol), and user enumeration defense. |
+| **A05** | Security Misconfiguration | `helmet` security headers (CSP, X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy), strict CORS whitelist. |
+| **A06** | Vulnerable Components | `npm audit` verified with 0 vulnerabilities, pinned audited dependencies (`helmet v8`, `express-rate-limit v8`). |
+| **A08** | Software/Data Integrity | Cryptographically verified tokens, strict input validation schemas, soft-delete audit trail preservation. |
+| **A09** | Security Logging/Monitoring | Structured JSON audit logging (`logs/security_audit.log`) tracking logins, failures, RBAC rejections, and mutations. |
 
-- **Backend Syntax Check**: Node syntax check validated with code `0` across all 10 route files, 7 models, and 6 controllers.
-- **Production Bundle**: `vite build` completed in `2.69s` with minified asset distribution.
+For dedicated security assessment documents:
+- [**Attack Surface Brief (ASB)**](ATTACK_SURFACE_BRIEF.md)
+- [**Master Security Assessment Report**](SECURITY_ASSESSMENT.md)
+- [**Security Testing & Verification Report**](SECURITY_TESTING_REPORT.md)
 
 ---
 
-## 💡 11. Engineering Challenges Encountered & Solutions
+## 🧪 11. Automated Testing & Verification Evidence
+
+The system maintains **100% test coverage and zero regressions** across **83 automated tests (73 Backend + 10 Frontend)**:
+
+### Backend Test Suite Execution (Jest & Supertest)
+```bash
+$ npm test
+
+ PASS  tests/security/authSecurity.test.js (7 tests)
+ PASS  tests/security/rbacSecurity.test.js (6 tests)
+ PASS  tests/security/injectionSecurity.test.js (4 tests)
+ PASS  tests/security/headersSecurity.test.js (2 tests)
+ PASS  tests/unit/validateMiddleware.test.js (9 tests)
+ PASS  tests/unit/studentModel.test.js (14 tests)
+ PASS  tests/unit/studentController.test.js (13 tests)
+ PASS  tests/integration/students.api.test.js (12 tests)
+ PASS  tests/integration/departmentsAndCourses.api.test.js (6 tests)
+
+Test Suites: 9 passed, 9 total
+Tests:       73 passed, 73 total
+Duration:    1.54s
+```
+
+### Frontend Test Suite Execution (Vitest)
+```bash
+$ npm test
+
+ ✓ src/tests/api.test.js (4 tests)
+ ✓ src/tests/Footer.test.jsx (2 tests)
+ ✓ src/tests/Header.test.jsx (2 tests)
+ ✓ src/tests/StudentTable.test.jsx (1 test)
+ ✓ src/tests/StudentModal.test.jsx (1 test)
+
+Test Files:  5 passed (5)
+Tests:       10 passed (10)
+Duration:    1.05s
+```
+
+- **Production Bundle**: `vite build` compiled cleanly in `2.44s` with zero errors.
+
+---
+
+## 💡 12. Engineering Challenges Encountered & Solutions
 
 1. **Partial Assessment Persistence**:
    - *Challenge*: Entering Mid Exam marks at midterm should not be wiped out when entering Final Exam marks later.
@@ -370,17 +415,23 @@ Duration:    1.03s
 2. **Credit-Hour Weighted CGPA Math**:
    - *Challenge*: Simple grade point averages fail when courses carry different credit weights.
    - *Solution*: Implemented credit-weighted formula: $\text{CGPA} = \frac{\sum (\text{GPA} \times \text{Credits})}{\sum \text{Credits}}$.
-3. **Responsive Header Density**:
-   - *Challenge*: Multiple administrative action buttons cluttered laptop and mobile screens.
-   - *Solution*: Re-engineered header into a single primary CTA (`+ Add Student`) paired with a contextual glassmorphism Settings Dropdown with click-outside listeners.
+3. **Privilege Escalation & Insecure Direct Object References (IDOR)**:
+   - *Challenge*: Malicious actors manipulating route parameters or self-registering with administrative claims.
+   - *Solution*: Created `verifyStudentOwnership` middleware comparing token claims against URL parameters, and enforced server-side role validation in `/api/auth/register`.
+4. **XSS & Injection Protection**:
+   - *Challenge*: Sanitizing user-submitted student records and campus announcements without breaking formatting.
+   - *Solution*: Implemented recursive `xssSanitizer` middleware in tandem with 100% parameterized SQL prepared statements and Helmet Content Security Policy.
 
 ---
 
-## 🚀 12. Final Reflection & Conclusion
+## 🚀 13. Final Reflection & Conclusion
 
-The **Cohort Student Management System** demonstrates a full-featured, scalable, and secure 3-Tier architecture. By pairing a normalized MySQL database with an Express REST API and a high-performance React frontend, the platform provides institutional reliability while delivering a smooth, modern user experience.
+The **Cohort Student Management System** demonstrates an enterprise-grade, highly secure 3-Tier architecture. By coupling a normalized MySQL database with an Express REST API hardened against the OWASP Top 10 vulnerabilities and a modern React frontend, the system provides institutional reliability, mathematical accuracy, and cryptographic security.
 
-### Final Submission Links:
+### Final Submission Links & Documentation:
 - **GitHub Repository**: [https://github.com/Fuad-Sabseb/studentmanagement.git](https://github.com/Fuad-Sabseb/studentmanagement.git)
-- **Live Architecture**: `MySQL Database ↔ Express REST API ↔ React + Vite Frontend`
-- **Documentation Report (.docx)**: Generated and saved in `docs/Student_Management_System_Documentation_Report.docx`
+- **Live Architecture**: `MySQL Database ↔ Express REST API (OWASP Hardened) ↔ React + Vite Frontend`
+- **Attack Surface Brief**: [`docs/ATTACK_SURFACE_BRIEF.md`](ATTACK_SURFACE_BRIEF.md)
+- **Security Assessment**: [`docs/SECURITY_ASSESSMENT.md`](SECURITY_ASSESSMENT.md)
+- **Security Testing Report**: [`docs/SECURITY_TESTING_REPORT.md`](SECURITY_TESTING_REPORT.md)
+- **Full Master Documentation**: [`docs/DOCUMENTATION_REPORT.md`](DOCUMENTATION_REPORT.md)

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 
+import LandingPage from "./components/LandingPage.jsx";
 import LoginPage from "./components/LoginPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AdminDashboard from "./components/AdminDashboard.jsx";
@@ -28,23 +29,29 @@ export default function App() {
   const getRoleRedirect = (role) => {
     if (role === "admin") return "/admin";
     if (role === "teacher") return "/teacher";
-    return "/student";
+    if (role === "student") return "/student";
+    return "/login";
   };
 
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public University Landing Page (Image 2 style) */}
+        <Route path="/" element={<LandingPage />} />
+
+        {/* Split-Screen Authentication Page (Image 1 style) */}
         <Route
           path="/login"
           element={
             isAuthenticated ? (
-              <Navigate to={getRoleRedirect(user.role)} replace />
+              <Navigate to={getRoleRedirect(user?.role)} replace />
             ) : (
               <LoginPage onLogin={handleLogin} />
             )
           }
         />
 
+        {/* 3-Tier Protected Internal Dashboards */}
         <Route
           path="/admin/*"
           element={
@@ -72,11 +79,12 @@ export default function App() {
           }
         />
 
+        {/* Catch-all fallback */}
         <Route
           path="*"
           element={
             <Navigate
-              to={isAuthenticated ? getRoleRedirect(user.role) : "/login"}
+              to={isAuthenticated ? getRoleRedirect(user?.role) : "/"}
               replace
             />
           }

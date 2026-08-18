@@ -3,25 +3,129 @@
  * validateMiddleware.js
  * -----------------------------------------------------
  * Purpose:
- * Validate request bodies for the Student, Department,
- * Course, and Grade endpoints. Returns HTTP 400 when
- * required fields are missing or malformed.
+ * Validate request bodies for all API endpoints.
+ * Enforces strong password complexity, input formats,
+ * numeric bounds, and email/phone standards.
  * =====================================================
  */
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9_.-]{3,30}$/;
+const PHONE_REGEX = /^[+0-9\s()-]{7,20}$/;
 
 /**
- * Validate the body used to CREATE a student.
- * Required: name, email
- * Optional: phone, department_id
+ * Password complexity rule:
+ * - At least 8 characters
+ * - At least 1 uppercase letter
+ * - At least 1 lowercase letter
+ * - At least 1 digit
+ * - At least 1 special character
+ */
+const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+
+function checkPasswordComplexity(password) {
+    if (!password || typeof password !== "string") {
+        return "Password is required";
+    }
+    if (password.length < 8) {
+        return "Password must be at least 8 characters long";
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+        return "Password must contain at least one lowercase letter";
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+        return "Password must contain at least one uppercase letter";
+    }
+    if (!/(?=.*\d)/.test(password)) {
+        return "Password must contain at least one number";
+    }
+    if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(password)) {
+        return "Password must contain at least one special character (!@#$%^&* etc.)";
+    }
+    return null;
+}
+
+/**
+ * Validate User Registration payload.
+ */
+const validateRegisterUser = (req, res, next) => {
+    const { username, password, email, role } = req.body || {};
+    const errors = [];
+
+    if (!username || typeof username !== "string" || !username.trim()) {
+        errors.push("username is required");
+    } else if (!USERNAME_REGEX.test(username.trim())) {
+        errors.push("username must be 3-30 characters long and can only contain letters, numbers, dots, underscores, and dashes");
+    }
+
+    const passwordError = checkPasswordComplexity(password);
+    if (passwordError) {
+        errors.push(passwordError);
+    }
+
+    if (email && typeof email === "string" && email.trim()) {
+        if (!EMAIL_REGEX.test(email.trim())) {
+            errors.push("email must be a valid email address");
+        }
+    }
+
+    if (role && !["student", "teacher", "admin"].includes(role)) {
+        errors.push("role must be one of 'student', 'teacher', 'admin'");
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Validation failed",
+            errors
+        });
+    }
+
+    next();
+};
+
+/**
+ * Validate Change Password payload.
+ */
+const validateChangePassword = (req, res, next) => {
+    const { currentPassword, newPassword } = req.body || {};
+    const errors = [];
+
+    if (!currentPassword || typeof currentPassword !== "string") {
+        errors.push("currentPassword is required");
+    }
+
+    const newPassError = checkPasswordComplexity(newPassword);
+    if (newPassError) {
+        errors.push(newPassError);
+    }
+
+    if (currentPassword && newPassword && currentPassword === newPassword) {
+        errors.push("New password must be different from current password");
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Validation failed",
+            errors
+        });
+    }
+
+    next();
+};
+
+/**
+ * Validate CREATE student payload.
  */
 const validateCreateStudent = (req, res, next) => {
-    const { name, email } = req.body || {};
+    const { name, email, phone, department_id } = req.body || {};
     const errors = [];
 
     if (!name || typeof name !== "string" || !name.trim()) {
         errors.push("name is required");
+    } else if (name.trim().length > 100) {
+        errors.push("name cannot exceed 100 characters");
     }
 
     if (!email || typeof email !== "string" || !email.trim()) {
@@ -30,6 +134,16 @@ const validateCreateStudent = (req, res, next) => {
         errors.push("email must be a valid email address");
     }
 
+    if (phone && typeof phone === "string" && phone.trim() && !PHONE_REGEX.test(phone.trim())) {
+        errors.push("phone must be a valid phone number (7-20 digits)");
+    }
+
+    if (department_id !== undefined && department_id !== null && department_id !== "") {
+        if (Number.isNaN(Number(department_id))) {
+            errors.push("department_id must be a number");
+        }
+    }
+
     if (errors.length > 0) {
         return res.status(400).json({
             success: false,
@@ -41,18 +155,12 @@ const validateCreateStudent = (req, res, next) => {
     next();
 };
 
-/**
- * Validate the body used to UPDATE a student.
- * Same required fields as create (full replace semantics),
- * matching the existing PUT /api/students/:id contract.
- */
 const validateUpdateStudent = (req, res, next) => {
     return validateCreateStudent(req, res, next);
 };
 
 /**
- * Validate department create/update payloads.
- * Required: name
+ * Validate department payload.
  */
 const validateDepartment = (req, res, next) => {
     const { name } = req.body || {};
@@ -60,6 +168,8 @@ const validateDepartment = (req, res, next) => {
 
     if (!name || typeof name !== "string" || !name.trim()) {
         errors.push("name is required");
+    } else if (name.trim().length > 100) {
+        errors.push("name cannot exceed 100 characters");
     }
 
     if (errors.length > 0) {
@@ -74,11 +184,10 @@ const validateDepartment = (req, res, next) => {
 };
 
 /**
- * Validate course create/update payloads.
- * Required: name, code
+ * Validate course payload.
  */
 const validateCourse = (req, res, next) => {
-    const { name, code } = req.body || {};
+    const { name, code, credit_hours, department_id } = req.body || {};
     const errors = [];
 
     if (!name || typeof name !== "string" || !name.trim()) {
@@ -87,6 +196,21 @@ const validateCourse = (req, res, next) => {
 
     if (!code || typeof code !== "string" || !code.trim()) {
         errors.push("code is required");
+    } else if (code.trim().length > 20) {
+        errors.push("code cannot exceed 20 characters");
+    }
+
+    if (credit_hours !== undefined && credit_hours !== null && credit_hours !== "") {
+        const ch = Number(credit_hours);
+        if (Number.isNaN(ch) || ch < 1 || ch > 10) {
+            errors.push("credit_hours must be a number between 1 and 10");
+        }
+    }
+
+    if (department_id !== undefined && department_id !== null && department_id !== "") {
+        if (Number.isNaN(Number(department_id))) {
+            errors.push("department_id must be a number");
+        }
     }
 
     if (errors.length > 0) {
@@ -101,8 +225,7 @@ const validateCourse = (req, res, next) => {
 };
 
 /**
- * Validate the payload used to assign a course to a student.
- * Required: course_id
+ * Validate course assignment payload.
  */
 const validateAssignCourse = (req, res, next) => {
     const { course_id } = req.body || {};
@@ -126,10 +249,7 @@ const validateAssignCourse = (req, res, next) => {
 };
 
 /**
- * Validate grade entry payloads.
- * Required: student_id, course_id
- * Marks (mid_exam, quiz, assignment, final_exam) are optional but,
- * if present, must be numbers between 0 and 100.
+ * Validate grade submission payload.
  */
 const validateGrade = (req, res, next) => {
     const { student_id, course_id, mid_exam, quiz, assignment, final_exam } = req.body || {};
@@ -162,11 +282,47 @@ const validateGrade = (req, res, next) => {
     next();
 };
 
+/**
+ * Validate announcement payload.
+ */
+const validateAnnouncement = (req, res, next) => {
+    const { title, content, priority, audience } = req.body || {};
+    const errors = [];
+
+    if (!title || typeof title !== "string" || !title.trim()) {
+        errors.push("title is required");
+    }
+    if (!content || typeof content !== "string" || !content.trim()) {
+        errors.push("content is required");
+    }
+    if (priority && !["normal", "important", "urgent"].includes(priority)) {
+        errors.push("priority must be one of 'normal', 'important', 'urgent'");
+    }
+    if (audience && !["all", "students", "faculty"].includes(audience)) {
+        errors.push("audience must be one of 'all', 'students', 'faculty'");
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Validation failed",
+            errors
+        });
+    }
+
+    next();
+};
+
 module.exports = {
+    validateRegisterUser,
+    validateChangePassword,
     validateCreateStudent,
     validateUpdateStudent,
     validateDepartment,
     validateCourse,
     validateAssignCourse,
-    validateGrade
+    validateGrade,
+    validateAnnouncement,
+    checkPasswordComplexity,
+    PASSWORD_COMPLEXITY_REGEX
 };

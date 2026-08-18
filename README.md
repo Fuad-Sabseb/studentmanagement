@@ -287,12 +287,32 @@ studentmanagement/
 │   └── package.json
 │
 ├── docs/
-│   ├── DOCUMENTATION_REPORT.md  # Comprehensive technical & academic report
-│   ├── API_DOCUMENTATION.md     # Detailed API specification
-│   └── generate_report_docx.js  # DOCX documentation report generator
+│   ├── DOCUMENTATION_REPORT.md      # Comprehensive technical & academic report
+│   ├── ATTACK_SURFACE_BRIEF.md      # ASB with Asset matrix, Trust boundaries, Top 3 risks
+│   ├── SECURITY_ASSESSMENT.md       # Master OWASP Top 10 compliance assessment
+│   ├── SECURITY_TESTING_REPORT.md   # Automated security test evidence (83/83 tests passing)
+│   ├── API_DOCUMENTATION.md         # Detailed API specification
+│   └── generate_report_docx.js      # DOCX documentation report generator
 │
 └── README.md
 
+
+---
+
+## 🛡️ Enterprise Security & OWASP Top 10 Controls
+
+This system has been hardened against the **OWASP Top 10 Vulnerabilities**:
+* **A01: Broken Access Control & Anti-IDOR**: Granular 3-Tier RBAC with `verifyStudentOwnership` preventing horizontal privilege escalation across student grade records.
+* **A02: Cryptographic Failures**: `bcryptjs` (10 rounds) password hashing, HMAC-SHA256 JWT tokens with automatic session expiration, and HSTS headers.
+* **A03: Injection & XSS Sanitization**: 100% Parameterized MySQL prepared statements with `?` placeholders; automated `xssSanitizer` input filter stripping script tags and malicious DOM handlers.
+* **A04 & A07: Rate Limiting & Authentication**: Anti-brute force throttling (10 reqs / 15m on auth routes) via `express-rate-limit`, password complexity engine (min 8 chars, upper/lower/digit/symbol), and user enumeration defense.
+* **A05: Security Headers & CORS**: `helmet` security headers (Content-Security-Policy, X-Frame-Options: DENY, X-Content-Type-Options: nosniff), explicit origin CORS whitelist.
+* **A09: Security Audit Logging**: Structured JSON logging (`logs/security_audit.log`) tracking authentication events, privilege escalation attempts, and data mutations.
+
+For complete security analyses and evidence, see:
+* 📄 [**Attack Surface Brief (ASB)**](docs/ATTACK_SURFACE_BRIEF.md)
+* 🛡️ [**Master Security Assessment Report**](docs/SECURITY_ASSESSMENT.md)
+* 🧪 [**Security Testing & Verification Report**](docs/SECURITY_TESTING_REPORT.md)
 
 ---
 

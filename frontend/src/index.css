@@ -10,9 +10,9 @@
   body {
     @apply bg-slate-950 text-slate-100 font-body antialiased;
     background-image:
-      radial-gradient(circle at 12% 8%, rgba(124, 58, 237, 0.18), transparent 40%),
-      radial-gradient(circle at 88% 15%, rgba(99, 102, 241, 0.14), transparent 45%),
-      radial-gradient(circle at 50% 100%, rgba(139, 92, 246, 0.10), transparent 50%);
+      radial-gradient(circle at 12% 8%, rgba(136, 19, 55, 0.18), transparent 40%),
+      radial-gradient(circle at 88% 15%, rgba(99, 102, 241, 0.16), transparent 45%),
+      radial-gradient(circle at 50% 100%, rgba(124, 58, 237, 0.12), transparent 50%);
     background-attachment: fixed;
   }
 
@@ -37,7 +37,7 @@
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(167, 139, 250, 0.25), rgba(255, 255, 255, 0) 40%);
+    background: linear-gradient(135deg, rgba(225, 29, 72, 0.2), rgba(167, 139, 250, 0.15), rgba(255, 255, 255, 0) 60%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -63,7 +63,11 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:from-brand-400 hover:to-brand-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:from-brand-500 hover:to-indigo-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-crimson {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-crimson-700 to-crimson-600 px-4 py-2.5 text-sm font-semibold text-white shadow-glow-crimson transition hover:from-crimson-600 hover:to-crimson-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-secondary {
@@ -80,5 +84,10 @@
 
   .skeleton {
     @apply animate-pulse rounded-lg bg-slate-800/80;
+  }
+
+  .curved-hero {
+    border-bottom-left-radius: 2.5rem;
+    border-bottom-right-radius: 2.5rem;
   }
 }

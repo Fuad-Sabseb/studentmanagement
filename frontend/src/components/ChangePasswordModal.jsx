@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { KeyRound, Loader2, X, Lock, CheckCircle2 } from "lucide-react";
-import { authApi } from "../services/api.js";
+import { authApi } from "../services/authApi.js";
 import { useToast } from "./Toast.jsx";
 
 export default function ChangePasswordModal({ open, onClose }) {

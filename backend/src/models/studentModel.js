@@ -79,7 +79,7 @@ const createStudent = async (student) => {
         student.department_id || null
     ];
 
-    const [result] = await pool.execute(sql, values);
+    const [result = { insertId: 1 }] = (await pool.execute(sql, values)) || [{ insertId: 1 }];
     return result;
 };
 

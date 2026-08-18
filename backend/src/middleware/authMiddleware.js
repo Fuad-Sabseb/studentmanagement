@@ -8,7 +8,7 @@
  */
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const getJwtSecret = () => process.env.JWT_SECRET || "cohort_university_super_secret_jwt_key_2026_production";
 
 const requireAuth = (req, res, next) => {
     const authHeader = req.headers.authorization || "";
@@ -22,7 +22,7 @@ const requireAuth = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, getJwtSecret());
         req.user = decoded; // { id, role, studentId, username }
         next();
     } catch (error) {
